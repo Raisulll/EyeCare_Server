@@ -2,7 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import signupRoute from "./routes/auth.js";
-import resetpasswordRoute from "./routes/resetPass.js";
+import resetpasswordRoute from  "./routes/resetPass.js";
 
 dotenv.config();
 const app = express();
