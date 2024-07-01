@@ -1,4 +1,14 @@
 SELECT
   *
 FROM
+  PATIENT;
+
+SELECT
+  *
+FROM
+  DOCTOR;
+
+SELECT
+  *
+FROM
   OTP;
