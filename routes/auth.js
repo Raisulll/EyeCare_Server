@@ -193,14 +193,15 @@ router.post("/shopsignup", async (req, res) => {
   } = req.body;
 
   //Authenticate the user is already exists
-  const checkEmail = `SELECT * FROM SHOP_OWNER WHERE SHOP_MAIL = :shopMail`;
+  const checkEmail = `SELECT * FROM SHOP WHERE SHOP_MAIL = :shopMail`;
   const checkEmailParams = { shopMail };
   const emailExists = await run_query(checkEmail, checkEmailParams);
+  // console.log(emailExists);
   if (emailExists.length > 0) {
     return res.status(409).json({ error: "User already exists" });
   } else {
     //Insert the user into the database
-    const query = `INSERT INTO SHOP_OWNER (SHOP_NAME, SHOP_MAIL, SHOP_PHONE, SHOP_DISTRICT, SHOP_AREA, SHOP_ROADNUMBER, SHOP_LICENSE, SHOP_PASSWORD) 
+    const query = `INSERT INTO SHOP (SHOP_NAME, SHOP_MAIL, SHOP_PHONE, SHOP_DISTRICT, SHOP_AREA, SHOP_ROADNUMBER, SHOP_LICENSE, SHOP_PASSWORD) 
                    VALUES (:shopName, :shopMail, :shopPhone, :shopDistrict, :shopArea, :shopRoadNum, :shopLicense, :shopPassword)`;
 
     const params = {
@@ -224,22 +225,63 @@ router.post("/shopsignup", async (req, res) => {
   }
 });
 
-// Shop Owner Login route
+// // Shop Owner Login route
+// router.post("/shopsignin", async (req, res) => {
+//   const { shopMail, shopPassword } = req.body;
+//   console.log(shopMail, shopPassword)
+//   if (!shopMail || !shopPassword)
+//     return res.status(400).json({ error: "Please fill all the fields" });
+//   console.log("Eikhane asche");
+
+//   // Authenticate the eamil is a user
+//   const query = `SELECT * FROM SHOP WHERE SHOP_MAIL = :shopMail`;
+//   const params = { shopMail };
+//   const user = await run_query(query, params);
+//   if (user.length === 0) {
+//     return res.status(404).json({ error: "User not found" });
+//   }
+
+//   // Authenticate the password
+//   if (user[0][8] !== shopPassword) {
+//     return res.status(401).json({ error: "Invalid password" });
+//   } else {
+//     // i need to send all user data without password to the client
+//     const userInfo = {
+//       ShopId: user[0][0],
+//       shopName: user[0][1],
+//       shopMail: user[0][2],
+//       shopPhone: user[0][3],
+//       shopDistrict: user[0][4],
+//       shopArea: user[0][5],
+//       shopRoadNum: user[0][6],
+//       shopLicense: user[0][7],
+//     };
+//     console.log("Eikhane asche");
+//     console.log(userInfo);
+//     res.status(200).json(userInfo);
+//   }
+// });
+
+
+
+// -------------------------------------------------------- Shop Owner Login Route --------------------------------------------------------
+// Shop owner Login route
 router.post("/shopsignin", async (req, res) => {
   const { shopMail, shopPassword } = req.body;
 
   if (!shopMail || !shopPassword)
-    return res.status(400).json({ error: "Please fill all the fields" });
-  
-  // Authenticate the eamil is a user
-  const query = `SELECT * FROM SHOP_OWNER WHERE SHOP_MAIL = :shopMail`;
+    return res.status(402).json({ error: "Please fill all the fields" });
+
+  //Authenticate the eamil is a user
+  const query = `SELECT * FROM SHOP WHERE SHOP_MAIL = :shopMail`;
   const params = { shopMail };
   const user = await run_query(query, params);
   if (user.length === 0) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  // Authenticate the password
+  console.log(user);
+  //Authenticate the password
   if (user[0][8] !== shopPassword) {
     return res.status(401).json({ error: "Invalid password" });
   } else {
@@ -252,12 +294,26 @@ router.post("/shopsignin", async (req, res) => {
       shopDistrict: user[0][4],
       shopArea: user[0][5],
       shopRoadNum: user[0][6],
-      shopLicense: user[0][7],
+      shopGender: user[0][7],
+      shopLicense: user[0][8],
+      timeSlot: user[0][9],
+      experience: user[0][10],
     };
     console.log(userInfo);
     res.status(200).json(userInfo);
   }
 });
+
+
+
+
+
+
+
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
 // Hospital Manager Signup route
 router.post("/hospitalsignup", async (req, res) => {
