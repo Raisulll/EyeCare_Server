@@ -1,4 +1,3 @@
-// routes/signup.js
 import express from "express";
 import { run_query } from "../db/connectiondb.js";
 
@@ -225,45 +224,6 @@ router.post("/shopsignup", async (req, res) => {
   }
 });
 
-// // Shop Owner Login route
-// router.post("/shopsignin", async (req, res) => {
-//   const { shopMail, shopPassword } = req.body;
-//   console.log(shopMail, shopPassword)
-//   if (!shopMail || !shopPassword)
-//     return res.status(400).json({ error: "Please fill all the fields" });
-//   console.log("Eikhane asche");
-
-//   // Authenticate the eamil is a user
-//   const query = `SELECT * FROM SHOP WHERE SHOP_MAIL = :shopMail`;
-//   const params = { shopMail };
-//   const user = await run_query(query, params);
-//   if (user.length === 0) {
-//     return res.status(404).json({ error: "User not found" });
-//   }
-
-//   // Authenticate the password
-//   if (user[0][8] !== shopPassword) {
-//     return res.status(401).json({ error: "Invalid password" });
-//   } else {
-//     // i need to send all user data without password to the client
-//     const userInfo = {
-//       ShopId: user[0][0],
-//       shopName: user[0][1],
-//       shopMail: user[0][2],
-//       shopPhone: user[0][3],
-//       shopDistrict: user[0][4],
-//       shopArea: user[0][5],
-//       shopRoadNum: user[0][6],
-//       shopLicense: user[0][7],
-//     };
-//     console.log("Eikhane asche");
-//     console.log(userInfo);
-//     res.status(200).json(userInfo);
-//   }
-// });
-
-
-
 // -------------------------------------------------------- Shop Owner Login Route --------------------------------------------------------
 // Shop owner Login route
 router.post("/shopsignin", async (req, res) => {
@@ -313,9 +273,8 @@ router.post("/shopsignin", async (req, res) => {
 
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------Hospital Manager Signup route-------------------------------------------------
 
-// Hospital Manager Signup route
 router.post("/hospitalsignup", async (req, res) => {
   const {
     hospitalName,
