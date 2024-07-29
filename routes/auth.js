@@ -161,7 +161,7 @@ router.post("/doctorsignin", async (req, res) => {
   } else {
     // i need to send all user data without password to the client
     const userInfo = {
-      DoctorId: user[0][0],
+      doctorId: user[0][0],
       doctorName: user[0][1],
       doctorEmail: user[0][2],
       doctorPhone: user[0][3],
