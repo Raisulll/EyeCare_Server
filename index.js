@@ -6,6 +6,7 @@ import editProfileRoute from "./routes/editProfile.js";
 import resetpasswordRoute from "./routes/resetPass.js";
 import appointment from "./routes/appointment.js";
 import DoctorAppointment from "./routes/DoctorAppointment.js";
+import PatientEditProfile from "./routes/PatientEditProfile.js";
 
 dotenv.config();
 const app = express();
@@ -18,6 +19,7 @@ app.use("/auth", resetpasswordRoute);
 app.use("/edit", editProfileRoute);
 app.use("/api", appointment);
 app.use("/", DoctorAppointment);
+app.use("/PatientEdit", PatientEditProfile);
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");

@@ -1,5 +1,14 @@
 import express from "express";
 import { run_query } from "../db/connectiondb.js";
+import multer from "multer";
+import cloudinary from "cloudinary";
+import streamifier from "streamifier";
+
+cloudinary.config({ 
+    cloud_name: 'dvt7ktdue', 
+    api_key: '343128951383287', 
+    api_secret: '86-oV6lIZFuMi6PtLM_oi2bKn50' 
+  });
 
 const router = express.Router();
 
@@ -74,6 +83,50 @@ function getNextDayOfWeek(dayOfWeek) {
     
     return nextDate;
 }
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// Route to upload a profile picture and store it in the database
+router.post('/upload-picture', upload.single('profilePhoto'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const imageStream = streamifier.createReadStream(req.file.buffer);
+
+    cloudinary.v2.uploader.upload_stream({ resource_type: 'auto' }, async (error, result) => {
+        if (error) {
+            console.error('Error uploading to Cloudinary:', error);
+            return res.status(500).send('Upload to Cloudinary failed');
+        }
+
+        // SQL query to insert the picture details into the PICTURETABLE
+        const query = `
+            INSERT INTO PICTURETABLE (PICTURE_URL, PICTURE_PUBLICID, PICTURE_VERSION)
+            VALUES (:url, :publicId, :version)
+        `;
+        
+        try {
+            await run_query(query, { 
+                url: result.secure_url, 
+                publicId: result.public_id, 
+                version: result.version 
+            });
+            
+            res.json({ 
+                message: 'Upload successful', 
+                profilePhoto: { 
+                    url: result.secure_url, 
+                    publicId: result.public_id, 
+                    version: result.version 
+                } 
+            });
+        } catch (dbError) {
+            console.error('Error saving picture to database:', dbError);
+            res.status(500).json({ error: 'Failed to save picture to database' });
+        }
+    }).end(imageStream);
+});
 
 router.post('/appointments', async (req, res) => {
     const { doctor, time, day, patientId } = req.body;

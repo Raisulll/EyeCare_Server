@@ -57,7 +57,7 @@ router.post("/login", async (req, res) => {
   if (!patientEmail || !patientPassword)
     return res.status(400).json({ error: "Please fill all the fields" });
 
-  //Authenticate the eamil is a user
+  //Authenticate the email is a user
   const query = `SELECT * FROM PATIENT WHERE PATIENT_MAIL = :patientEmail`;
   const params = { patientEmail };
   const user = await run_query(query, params);
@@ -80,6 +80,7 @@ router.post("/login", async (req, res) => {
       patientArea: user[0][6],
       patientRoadNum: user[0][7],
       patientGender: user[0][8],
+      URL:user[0][10],
     };
     console.log(userInfo);
     res.status(200).json(userInfo);
