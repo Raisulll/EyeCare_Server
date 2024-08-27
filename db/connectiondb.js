@@ -16,7 +16,9 @@ export const connection = async () => {
 
 export const run_query = async (query, params) => {
   const conn = await connection();
-  const data = await conn.execute(query, params);
+  const data = await conn.execute(query, params, {
+    outFormat: oracledb.OUT_FORMAT_OBJECT,
+  });
   conn.commit();
   await conn.close();
   return data.rows;

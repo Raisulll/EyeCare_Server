@@ -53,6 +53,7 @@ router.post("/signup", async (req, res) => {
 //Patient Login route
 router.post("/login", async (req, res) => {
   const { patientEmail, patientPassword } = req.body;
+  console.log("Logisdf", req.body);
 
   if (!patientEmail || !patientPassword)
     return res.status(400).json({ error: "Please fill all the fields" });
@@ -66,20 +67,13 @@ router.post("/login", async (req, res) => {
   }
 
   //Authenticate the password
-  if (user[0][9] !== patientPassword) {
+  if (user[0].PATIENT_PASSWORD !== patientPassword) {
     return res.status(401).json({ error: "Invalid password" });
   } else {
     // i need to send all user data without password to the client
     const userInfo = {
-      PatientId: user[0][0],
-      patientName: user[0][1],
-      patientEmail: user[0][2],
-      patientPhone: user[0][3],
-      patientDob: user[0][4],
-      patientDistrict: user[0][5],
-      patientArea: user[0][6],
-      patientRoadNum: user[0][7],
-      patientGender: user[0][8],
+      PatientId: user[0].PATIENT_ID,
+      usertype: "patient",
     };
     console.log(userInfo);
     res.status(200).json(userInfo);
@@ -154,24 +148,17 @@ router.post("/doctorsignin", async (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  console.log(user);
+  // console.log(user);
   //Authenticate the password
-  if (user[0][11] !== doctorPassword) {
+  console.log(user[0].DOCTOR_PASSWORD);
+  // console.log(doctorPassword);
+  if (user[0].DOCTOR_PASSWORD !== doctorPassword) {
     return res.status(401).json({ error: "Invalid password" });
   } else {
     // i need to send all user data without password to the client
     const userInfo = {
-      doctorId: user[0][0],
-      doctorName: user[0][1],
-      doctorEmail: user[0][2],
-      doctorPhone: user[0][3],
-      doctorDistrict: user[0][4],
-      doctorArea: user[0][5],
-      doctorRoadNum: user[0][6],
-      doctorGender: user[0][7],
-      doctorLicense: user[0][8],
-      timeSlot: user[0][9],
-      experience: user[0][10],
+      doctorId: user[0].DOCTOR_ID,
+      usertype: "doctor",
     };
     console.log(userInfo);
     res.status(200).json(userInfo);
@@ -242,36 +229,18 @@ router.post("/shopsignin", async (req, res) => {
 
   console.log(user);
   //Authenticate the password
-  if (user[0][8] !== shopPassword) {
+  if (user[0].SHOP_PASSWORD !== shopPassword) {
     return res.status(401).json({ error: "Invalid password" });
   } else {
     // i need to send all user data without password to the client
     const userInfo = {
-      ShopId: user[0][0],
-      shopName: user[0][1],
-      shopMail: user[0][2],
-      shopPhone: user[0][3],
-      shopDistrict: user[0][4],
-      shopArea: user[0][5],
-      shopRoadNum: user[0][6],
-      shopGender: user[0][7],
-      shopLicense: user[0][8],
-      timeSlot: user[0][9],
-      experience: user[0][10],
+      ShopId: user[0].SHOP_ID,
+      usertype: "shop",
     };
     console.log(userInfo);
     res.status(200).json(userInfo);
   }
 });
-
-
-
-
-
-
-
-
-
 
 //-----------------------------------------------------Hospital Manager Signup route-------------------------------------------------
 
@@ -298,7 +267,7 @@ router.post("/hospitalsignup", async (req, res) => {
   //Insert the user into the database
   const query = `INSERT INTO HOSPITAL_MANAGER (HOSPITAL_NAME, HOSPITAL_MAIL, HOSPITAL_PHONE, HOSPITAL_DISTRICT, HOSPITAL_AREA, HOSPITAL_ROADNUMBER, HOSPITAL_LICENSE, HOSPITAL_PASSWORD) 
                  VALUES (:hospitalName, :hospitalMail, :hospitalPhone, :hospitalDistrict, :hospitalArea, :hospitalRoadNum, :hospitalLicense, :hospitalPassword)`;
-  
+
   const params = {
     hospitalName,
     hospitalMail,
@@ -320,7 +289,7 @@ router.post("/hospitalsignup", async (req, res) => {
     res.status(400).json({ error: "Error creating user" });
   }
 });
-  
+
 // Hospital Manager Login route
 router.post("/hospitalsignin", async (req, res) => {
   const { hospitalMail, hospitalPassword } = req.body;
@@ -328,8 +297,9 @@ router.post("/hospitalsignin", async (req, res) => {
   if (!hospitalMail || !hospitalPassword)
     return res.status(400).json({ error: "Please fill all the fields" });
 
+  console.log("eikhane", req.body);
   //Authenticate the eamil is a user
-  const query = `SELECT * FROM HOSPITAL_MANAGER WHERE HOSPITAL_MAIL = :hospitalMail`;
+  const query = `SELECT * FROM HOSPITAL WHERE HOSPITAL_MAIL = :hospitalMail`;
   const params = { hospitalMail };
   const user = await run_query(query, params);
   if (user.length === 0) {
@@ -337,19 +307,13 @@ router.post("/hospitalsignin", async (req, res) => {
   }
 
   //Authenticate the password
-  if (user[0][7] !== hospitalPassword) {
+  if (user[0].HOSPITAL_PASSWORD !== hospitalPassword) {
     return res.status(401).json({ error: "Invalid password" });
   } else {
     // i need to send all user data without password to the client
     const userInfo = {
-      HospitalId: user[0][0],
-      hospitalName: user[0][1],
-      hospitalMail: user[0][2],
-      hospitalPhone: user[0][3],
-      hospitalDistrict: user[0][4],
-      hospitalArea: user[0][5],
-      hospitalRoadNum: user[0][6],
-      hospitalLicense: user[0][7],
+      HospitalId: user[0].HOSPITAL_ID,
+      usertype: "hospital",
     };
     console.log(userInfo);
     res.status(200).json(userInfo);
