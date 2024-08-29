@@ -2,13 +2,13 @@ import express from "express";
 import { run_query } from "../db/connectiondb.js";
 import multer from "multer";
 import cloudinary from "cloudinary";
-import streamifier from "streamifier";
+import streamifier from "streamifier";
 
 cloudinary.config({ 
     cloud_name: 'dvt7ktdue', 
     api_key: '343128951383287', 
-    api_secret: '86-oV6lIZFuMi6PtLM_oi2bKn50' 
-  });
+    api_secret: '86-oV6lIZFuMi6PtLM_oi2bKn50' 
+});
 
 const router = express.Router();
 
@@ -25,22 +25,85 @@ router.get('/doctors', async (req, res) => {
     }
 });
 
-// Route to fetch time slots for a specific doctor
+// Route to fetch time slots for a specific doctor considering existing appointments
+
 router.get('/doctors/:doctorId/times', async (req, res) => {
     const doctorId = parseInt(req.params.doctorId, 10);
-    if (isNaN(doctorId)) {
-        return res.status(400).json({ error: 'Invalid doctor ID' });
+    const { day } = req.query;
+
+    console.log(`Day: ${day}`);
+    console.log(`Doctor ID: ${doctorId}`);
+
+    if (isNaN(doctorId) || !day) {
+        return res.status(400).json({ error: 'Invalid doctor ID or day' });
     }
+
     try {
-        const query = 'SELECT DOCTOR_TIMESLOT FROM DOCTOR WHERE DOCTOR_ID = :doctorId';
-        const times = await run_query(query, { doctorId });
-        console.log(times);
-        res.json(times);
+        // Fetch doctor's default timeslot
+        const doctorQuery = 'SELECT DOCTOR_TIMESLOT FROM DOCTOR WHERE DOCTOR_ID = :doctorId';
+        const doctorTimes = await run_query(doctorQuery, { doctorId });
+        console.log('Doctor Times:', doctorTimes);
+
+        const doctorTimeslot = doctorTimes[0] ? doctorTimes[0][0] : undefined;
+        console.log(`Doctor Timeslot: ${doctorTimeslot}`);
+
+        // Check if doctorTimeslot is defined
+        if (!doctorTimeslot) {
+            return res.status(400).json({ error: 'Doctor timeslot not found' });
+        }
+
+        // Fetch the latest appointment time for the given day
+        const appointmentQuery = `
+            SELECT APPOINTMENT_TIME 
+            FROM APPOINTMENT 
+            WHERE DOCTOR_ID = :doctorId AND TO_CHAR(APPOINTMENT_DATE, 'DD-MON-YY') = :day 
+            ORDER BY APPOINTMENT_TIME DESC 
+            FETCH FIRST 1 ROWS ONLY
+        `;
+        const appointments = await run_query(appointmentQuery, { doctorId, day });
+        console.log('Appointments:', appointments);
+
+        let availableTimeslot;
+        if (appointments.length > 0) {
+            let lastAppointmentTime = appointments[0][0]; // Assuming appointment time is directly accessible as a string
+            console.log(`Last Appointment Time: ${lastAppointmentTime}`);
+
+            // Add .30 to the last appointment time
+            let [hour, minute] = lastAppointmentTime.split('.').map(Number);
+
+            if (minute === 30) {
+                // If it's 5.30, make it 6.00
+                hour += 1;
+                minute = 0;
+            } else {
+                // If it's 5, make it 5.30
+                minute = 30;
+            }
+
+            // Construct the new time slot as a string
+            lastAppointmentTime = `${hour}${minute === 0 ? '.00' : '.30'}`;
+
+            // Check if the time exceeds 10.00
+            if (hour >= 10) {
+                return res.json(['No more time slots available']);
+            }
+
+            availableTimeslot = lastAppointmentTime;
+        } else {
+            // If no appointments exist, use the default timeslot and add .00
+            availableTimeslot = `${doctorTimeslot}.00`;
+        }
+
+        console.log(`Available Timeslot: ${availableTimeslot}`);
+        res.json([availableTimeslot]);
+
     } catch (error) {
-        console.error(`Error fetching time slots for doctor ID: ${doctorId}`, error);
+        console.error(`Error fetching time slots for doctor ID: ${doctorId}, error: ${error.message}`);
         res.status(500).json({ error: 'Failed to fetch time slots' });
     }
 });
+
+
 
 // Route to fetch all appointments for a specific patient
 router.get('/appointments', async (req, res) => {
@@ -65,7 +128,6 @@ router.get('/appointments', async (req, res) => {
     }
 });
 
-// Route to book an appointment
 // Helper function to get the next occurrence of a specific day of the week
 function getNextDayOfWeek(dayOfWeek) {
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -75,7 +137,6 @@ function getNextDayOfWeek(dayOfWeek) {
     const currentDate = new Date();
     const currentDayIndex = currentDate.getDay();
     
-    // Calculate how many days until the next occurrence of the specified day
     const daysUntilNextOccurrence = (dayIndex + 7 - currentDayIndex) % 7 || 7;
     
     const nextDate = new Date();
@@ -83,6 +144,7 @@ function getNextDayOfWeek(dayOfWeek) {
     
     return nextDate;
 }
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -100,7 +162,6 @@ router.post('/upload-picture', upload.single('profilePhoto'), (req, res) => {
             return res.status(500).send('Upload to Cloudinary failed');
         }
 
-        // SQL query to insert the picture details into the PICTURETABLE
         const query = `
             INSERT INTO PICTURETABLE (PICTURE_URL, PICTURE_PUBLICID, PICTURE_VERSION)
             VALUES (:url, :publicId, :version)
@@ -128,22 +189,19 @@ router.post('/upload-picture', upload.single('profilePhoto'), (req, res) => {
     }).end(imageStream);
 });
 
+// Route to book an appointment
 router.post('/appointments', async (req, res) => {
     const { doctor, time, day, patientId } = req.body;
 
-    // Check if all required fields are provided
     if (!doctor || !time || !day || !patientId) {
         return res.status(400).json({ error: 'Please provide all required fields' });
     }
 
     try {
-        // Calculate the next occurrence of the provided day
         const appointmentDate = getNextDayOfWeek(day);
 
-        // Convert date to Oracle-friendly format (YYYY-MM-DD)
         const formattedDate = appointmentDate.toISOString().split('T')[0];
 
-        // SQL query to insert a new appointment
         const query = `
             INSERT INTO APPOINTMENT (
                 APPOINTMENT_DATE, 
@@ -161,18 +219,14 @@ router.post('/appointments', async (req, res) => {
             )
         `;
         
-        // Running the query with provided values
         await run_query(query, { appointmentDate: formattedDate, time, patientId, doctor });
 
-        // Sending success response
         res.status(201).json({ message: 'Appointment successfully booked!' });
 
     } catch (error) {
         console.error('Error booking appointment:', error);
-        res.status(500).json({ error: 'Failed to book appointment' });
-    }
+        res.status(500).json({ error: 'Failed to book appointment' });
+    }
 });
 
-
-
-export default router;
+export default router;
