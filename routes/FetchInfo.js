@@ -13,10 +13,10 @@ router.get("/doctordata", async (req, res) => {
       `SELECT * FROM DOCTOR WHERE DOCTOR_ID=${doctorId}`,
       {}
     );
-    console.log(doctorData);
+    // console.log(doctorData);
     res.status(200).json(doctorData[0]);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -24,16 +24,16 @@ router.get("/doctordata", async (req, res) => {
 //fetch patient data
 router.get("/patientdata", async (req, res) => {
   const patientId = req.query.patientid;
-  console.log(patientId);
+  // console.log(patientId);
   try {
     const patientData = await run_query(
       `SELECT * FROM PATIENT WHERE PATIENT_ID=${patientId}`,
       {}
     );
-    console.log(patientData);
+    // console.log(patientData);
     res.status(200).json(patientData[0]);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -41,7 +41,7 @@ router.get("/patientdata", async (req, res) => {
 // fetch appointment info
 router.get("/appointmentinfo", async (req, res) => {
   const appointmentId = req.query.appointmentId;
-  console.log(appointmentId);
+  // console.log(appointmentId);
   try {
     const appointmentInfo = await run_query(
       `SELECT DOCTOR_NAME, PATIENT_NAME, APPOINTMENT_DATE, PATIENT_AGE
@@ -52,10 +52,10 @@ router.get("/appointmentinfo", async (req, res) => {
       A.APPOINTMENT_ID=${appointmentId}`,
       {}
     );
-    console.log(appointmentInfo);
+    // console.log(appointmentInfo);
     res.status(200).json(appointmentInfo[0]);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -64,7 +64,7 @@ router.get("/appointmentinfo", async (req, res) => {
 
 router.get("/senddoctortransactions", async (req, res) => {
   const doctorId = req.query.doctorId;
-  console.log(doctorId);
+  // console.log(doctorId);
   try {
     const transaction = await run_query(
       `SELECT PATIENT_NAME, TRANSACTION_DATE, TRANSACTION_AMOUNT 
@@ -75,7 +75,7 @@ router.get("/senddoctortransactions", async (req, res) => {
     `,
       {}
     );
-    console.log("All okay", transaction);
+    // console.log("All okay", transaction);
     res.status(200).json(transaction);
   } catch (error) {
     console.error("Error fetching transactions:", error);
@@ -86,7 +86,7 @@ router.get("/senddoctortransactions", async (req, res) => {
 // fetch patient transaction for a specific patient
 router.get("/sendpatienttransactions", async (req, res) => {
   const patientId = req.query.patientId;
-  console.log(patientId);
+  // console.log(patientId);
   try {
     const transaction = await run_query(
       `
@@ -96,7 +96,7 @@ router.get("/sendpatienttransactions", async (req, res) => {
       `,
       {}
     );
-    console.log("All okay", transaction);
+    // console.log("All okay", transaction);
     res.status(200).json(transaction);
   } catch (error) { 
     console.error("Error fetching transactions:", error);
@@ -107,16 +107,16 @@ router.get("/sendpatienttransactions", async (req, res) => {
 // fetch hospital info
 router.get("/hospitaldata", async (req, res) => {
   const hospitalId = req.query.hospitalid;
-  console.log("Hospital Id",hospitalId);
+  // console.log("Hospital Id",hospitalId);
   try {
     const hospitalData = await run_query(
       `SELECT * FROM HOSPITAL WHERE HOSPITAL_ID=${hospitalId}`,
       {}
     );
-    console.log(hospitalData);
+    // console.log(hospitalData);
     res.status(200).json(hospitalData[0]);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 })
@@ -124,7 +124,7 @@ router.get("/hospitaldata", async (req, res) => {
 //fetch schedule for a specific hospital
 router.get("/hospitalSchedule", async (req, res) => {
   const hospitalId = req.query.hospitalid;
-  console.log(hospitalId);
+  // console.log(hospitalId);
   try {
     const schedule = await run_query(
       `SELECT DOCTOR_NAME, PATIENT_NAME, APPOINTMENT_DATE, APPOINTMENT_TIME
@@ -136,7 +136,7 @@ router.get("/hospitalSchedule", async (req, res) => {
       H.HOSPITAL_ID=${hospitalId}`,
       {}
     );
-    console.log("All okay", schedule);
+    // console.log("All okay", schedule);
     res.status(200).json(schedule);
   } catch (error) {
     console.error("Error fetching schedule:", error);
@@ -150,12 +150,65 @@ router.get("/prescriptionforpatient", async (req, res) => {
   const appointmentId = req.query.appointmentId;
   try {
     const prescriptioninfo = await run_query(`SELECT * FROM PRESCRIPTION WHERE APPOINTMENT_ID=${appointmentId}`, {})
-    console.log(prescriptioninfo);
+    // console.log(prescriptioninfo);
     res.status(200).json(prescriptioninfo[0]);
   } catch (error) {
     console.error("Error fetching prescription:", error);
     res.status(500).json({ error: "Failed to fetch prescription" });
   }
 })
+
+//fetch shop data
+router.get("/shopdata", async (req, res) => {
+  const shopId = req.query.shopid;
+  // console.log(shopId);
+  try {
+    const shopData = await run_query(
+      `SELECT * FROM SHOP WHERE SHOP_ID=${shopId}`,
+      {}
+    );
+    // console.log(shopData);
+    res.status(200).json(shopData[0]);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+})
+
+// fetch all products
+router.get("/allproducts", async (req, res) => {
+  try {
+    const allProducts = await run_query(`SELECT * FROM SUPPLY`, {});
+    // console.log(allProducts);
+    res.status(200).json(allProducts);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+})
+
+
+// fetch products
+router.get("/products", async (req, res) => {
+  console.log("eikhane asche");
+  // fetch all products from INVENTORY
+  const userId = req.query.userId;
+  try {
+    const products = await run_query(
+      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, QUANTITY
+      FROM SUPPLY S, INVENTORY I
+      WHERE
+      S.PRODUCT_ID = I.PRODUCT_ID`,
+      {}
+    );
+    // console.log(products);1
+    res.status(200).json(products);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+})
+
+
 
 export default router;

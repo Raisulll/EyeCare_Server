@@ -5,7 +5,13 @@ const router = express.Router();
 
 //set information in prescription
 router.post("/setprescription", async (req, res) => {
-  const { appointmentId, patientIssue, medicine, glassDetails, surgeryDetails } = req.body;
+  const {
+    appointmentId,
+    patientIssue,
+    medicine,
+    glassDetails,
+    surgeryDetails,
+  } = req.body;
 
   try {
     let query = `
@@ -85,5 +91,53 @@ router.post("/setprescription", async (req, res) => {
   }
 });
 
+// add product
+router.post("/addproduct", async (req, res) => {
+  const {
+    shopId,
+    productId,
+    quantity
+  } = req.body;
+  console.log(shopId, productId, quantity);
+  try {
+    const query = `
+      SELECT * FROM INVENTORY
+      WHERE SHOP_ID=:shopId AND 
+      PRODUCT_ID=:productId`
+    const params = {
+      shopId,
+      productId
+    }
+    const result = await run_query(query, params);
+    console.log(result);
+    if (result.length > 0) {
+      const query = `
+        UPDATE INVENTORY
+        SET QUANTITY = QUANTITY + :quantity
+        WHERE SHOP_ID=:shopId AND 
+        PRODUCT_ID=:productId`
+      const params = {
+        shopId,
+        productId,
+        quantity
+      }
+      await run_query(query, params);
+    } else {
+      const query = `
+        INSERT INTO INVENTORY(SHOP_ID, PRODUCT_ID, QUANTITY)
+        VALUES(:shopId, :productId, :quantity)`
+      const params = {
+        shopId,
+        productId,
+        quantity
+      }
+      await run_query(query, params);
+    }
+    res.status(200).json({ message: "Product added successfully" });
+  } catch (error) { 
+    console.error("Error adding product:", error);
+    res.status(500).json({ error: "Failed to add product" });
+  }
+})
 
 export default router;
