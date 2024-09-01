@@ -195,14 +195,37 @@ router.get("/products", async (req, res) => {
   const userId = req.query.userId;
   try {
     const products = await run_query(
-      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, QUANTITY
+      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, QUANTITY, SHOP_ID
       FROM SUPPLY S, INVENTORY I
       WHERE
-      S.PRODUCT_ID = I.PRODUCT_ID`,
+      S.PRODUCT_ID = I.PRODUCT_ID AND
+      QUANTITY > 0`,
       {}
     );
     // console.log(products);1
     res.status(200).json(products);
+  } catch (error) {
+    // console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+})
+
+// fetch cart items
+router.get("/cartitems", async (req, res) => {
+  const patientId = req.query.patientId;
+  console.log(patientId);
+  try {
+    const cartItems = await run_query(
+      `SELECT PRODUCT_NAME, PRODUCT_PRICE,C.PRODUCT_ID, QUANTITY, CART_QUANTITY
+      FROM CART C, SUPPLY S, INVENTORY I
+      WHERE
+      C.PRODUCT_ID = S.PRODUCT_ID AND
+      S.PRODUCT_ID = I.PRODUCT_ID AND
+      C.PATIENT_ID=${patientId}`,
+      {}
+    );
+    // console.log(cartItems);
+    res.status(200).json(cartItems);
   } catch (error) {
     // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });

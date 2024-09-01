@@ -140,4 +140,84 @@ router.post("/addproduct", async (req, res) => {
   }
 })
 
+
+// add product to cart
+router.post("/addtocart", async (req, res) => {
+  const {
+    userId,
+    productId,
+    shopId
+  } = req.body;
+  console.log(userId, productId, shopId);
+  try {
+    let query = `
+      SELECT * FROM CART 
+      WHERE PATIENT_ID=:userId AND
+      PRODUCT_ID=:productId`
+    let params = {
+      userId,
+      productId
+    }
+    const result = await run_query(query, params);
+    console.log(result);
+    if (result.length > 0)
+    {
+      query = `
+        UPDATE CART
+        SET CART_QUANTITY = CART_QUANTITY + 1
+        WHERE PATIENT_ID=:userId AND
+        PRODUCT_ID=:productId`
+      params = {
+        userId,
+        productId
+      }
+      await run_query(query, params);
+    }
+    else 
+    {
+      query = `
+        INSERT INTO CART(PATIENT_ID, PRODUCT_ID, SHOP_ID, CART_QUANTITY)
+        VALUES(:userId, :productId, :shopId, 1)`
+      params = {
+        userId,
+        productId,
+        shopId
+      }
+      await run_query(query, params);
+    }
+    res.status(200).json({ message: "Product added to cart successfully" });
+  } catch (eror) {
+    console.error("Error adding product to cart:", error);
+    res.status(500).json({ error: "Failed to add product to cart" });
+  }
+})
+
+
+// update cart quantity
+router.post("/updatecartquantity", async (req, res) => { 
+  const {
+    productId,
+    quantity,
+    patientId
+  } = req.body;
+  console.log("server",productId, quantity, patientId);
+  try {
+    const query = `
+      UPDATE CART
+      SET CART_QUANTITY = :quantity
+      WHERE PRODUCT_ID=:productId AND
+      PATIENT_ID=:patientId`
+    const params = {
+      productId,
+      quantity,
+      patientId
+    }
+    await run_query(query, params);
+    res.status(200).json({ message: "Cart quantity updated successfully" });
+  } catch (error) {
+    console.error("Error updating cart quantity:", error);
+    res.status(500).json({ error: "Failed to update cart quantity" });
+  }
+});
+
 export default router;
