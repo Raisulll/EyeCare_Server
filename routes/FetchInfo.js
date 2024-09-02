@@ -232,6 +232,19 @@ router.get("/cartitems", async (req, res) => {
   }
 })
 
+// fetch all delivery agency informatio
+router.get("/deliveryagency", async (req, res) => {
+  try {
+    const deliveryagency = `SELECT DELIVERY_AGENCY_NAME, DELIVERY_AGENCY_STATUS,DELIVERY_CHARGE FROM DELIVERY_AGENCY`;
+    const deliveryagencyInfo = await run_query(deliveryagency, {});
+    console.log(deliveryagencyInfo);
+    res.status(200).json(deliveryagencyInfo);
+  } catch (error) {
+    console.error("Error fetching delivery agency:", error);
+    res.status(500).json({ error: "Failed to fetch delivery agency" });
+  }
+});
+
 
 
 export default router;
