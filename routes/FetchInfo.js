@@ -98,7 +98,7 @@ router.get("/sendpatienttransactions", async (req, res) => {
     );
     // console.log("All okay", transaction);
     res.status(200).json(transaction);
-  } catch (error) { 
+  } catch (error) {
     console.error("Error fetching transactions:", error);
     res.status(500).json({ error: "Failed to fetch transactions" });
   }
@@ -119,7 +119,7 @@ router.get("/hospitaldata", async (req, res) => {
     // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 //fetch schedule for a specific hospital
 router.get("/hospitalSchedule", async (req, res) => {
@@ -144,19 +144,21 @@ router.get("/hospitalSchedule", async (req, res) => {
   }
 });
 
-
 //fetch prescription for a specific appointment
 router.get("/prescriptionforpatient", async (req, res) => {
   const appointmentId = req.query.appointmentId;
   try {
-    const prescriptioninfo = await run_query(`SELECT * FROM PRESCRIPTION WHERE APPOINTMENT_ID=${appointmentId}`, {})
+    const prescriptioninfo = await run_query(
+      `SELECT * FROM PRESCRIPTION WHERE APPOINTMENT_ID=${appointmentId}`,
+      {}
+    );
     // console.log(prescriptioninfo);
     res.status(200).json(prescriptioninfo[0]);
   } catch (error) {
     console.error("Error fetching prescription:", error);
     res.status(500).json({ error: "Failed to fetch prescription" });
   }
-})
+});
 
 //fetch shop data
 router.get("/shopdata", async (req, res) => {
@@ -173,7 +175,7 @@ router.get("/shopdata", async (req, res) => {
     // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 // fetch all products
 router.get("/allproducts", async (req, res) => {
@@ -185,8 +187,7 @@ router.get("/allproducts", async (req, res) => {
     // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
-
+});
 
 // fetch products
 router.get("/products", async (req, res) => {
@@ -195,7 +196,7 @@ router.get("/products", async (req, res) => {
   const userId = req.query.userId;
   try {
     const products = await run_query(
-      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, QUANTITY, SHOP_ID
+      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, PRODUCT_IMAGE,QUANTITY, SHOP_ID
       FROM SUPPLY S, INVENTORY I
       WHERE
       S.PRODUCT_ID = I.PRODUCT_ID AND
@@ -208,7 +209,7 @@ router.get("/products", async (req, res) => {
     // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 // fetch cart items
 router.get("/cartitems", async (req, res) => {
@@ -230,12 +231,12 @@ router.get("/cartitems", async (req, res) => {
     // console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 // fetch all delivery agency informatio
 router.get("/deliveryagency", async (req, res) => {
   try {
-    const deliveryagency = `SELECT DELIVERY_AGENCY_NAME, DELIVERY_AGENCY_STATUS,DELIVERY_CHARGE FROM DELIVERY_AGENCY`;
+    const deliveryagency = `SELECT DELIVERY_AGENCY_ID, DELIVERY_AGENCY_NAME, DELIVERY_AGENCY_STATUS,DELIVERY_CHARGE FROM DELIVERY_AGENCY`;
     const deliveryagencyInfo = await run_query(deliveryagency, {});
     console.log(deliveryagencyInfo);
     res.status(200).json(deliveryagencyInfo);
@@ -245,6 +246,85 @@ router.get("/deliveryagency", async (req, res) => {
   }
 });
 
+// fetch all orders which are not delivered
+router.get("/orders", async (req, res) => {
+  const shopId = req.query.shopId;
+  try {
+    const orders = await run_query(
+      `SELECT
+        O.ORDER_ID,
+        PRODUCT_NAME,
+        ORDER_QUANTITY,
+        PATIENT_NAME,
+        ORDER_DATE
+      FROM
+        ORDERS           O,
+        ORDERED_PRODUCTS OP,
+        SUPPLY           S,
+        PATIENT          P
+      WHERE
+        O.ORDER_ID = OP.ORDER_ID
+        AND OP.PRODUCT_ID = S.PRODUCT_ID
+        AND O.PATIENT_ID = P.PATIENT_ID
+        AND SHOP_ID = ${shopId}
+        AND ORDER_STATUS = 'Pending'`,
+      {}
+    );
+    console.log(orders);
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
 
+// fetch delivery data
+router.get("/deliverydata", async (req, res) => {
+  const deliveryId = req.query.deliveryId;
+  try {
+    const deliverydata = await run_query(
+      `SELECT * FROM  DELIVERY_AGENCY WHERE DELIVERY_AGENCY_ID=${deliveryId}`,
+      {}
+    )
+    console.log(deliverydata);
+    res.status(200).json(deliverydata);
+  } catch (error) {
+    console.error("Error fetching delivery data:", error);
+    res.status(500).json({ error: "Failed to fetch delivery data" });
+  }
+})
+
+// fetch all orders for a specific delivery agency
+router.get("/ordersfordeliveryagency", async (req, res) => {
+  const deliveryId = req.query.deliveryId;
+  try {
+    const orders = await run_query(
+      `SELECT O.ORDER_ID,ORDER_STATUS, SHOP_NAME,PATIENT_NAME, ORDER_DATE, PATIENT_ROADNUMBER,PATIENT_AREA, PATIENT_DISTRICT, PATIENT_PHONE
+      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, PATIENT P
+      WHERE 
+      O.ORDER_ID = OP.ORDER_ID AND
+      OP.SHOP_ID = S.SHOP_ID AND
+      O.DELIVERY_AGENCY_ID = ${deliveryId} AND
+      O.PATIENT_ID = P.PATIENT_ID AND
+      O.ORDER_STATUS = 'Accepted'
+      `,
+      {}
+    );
+
+    const uniqueOrders = [];
+    const orderIds = new Set();
+    orders.forEach((order) => {
+      if (!orderIds.has(order.ORDER_ID)) {
+        uniqueOrders.push(order);
+        orderIds.add(order.ORDER_ID);
+      }
+    });
+    console.log(uniqueOrders);
+    res.status(200).json(uniqueOrders);
+  } catch (error) {
+    console.error("Error fetching orders for delivery agency:", error);
+    res.status(500).json({ error: "Failed to fetch orders for delivery agency" });
+  }
+});
 
 export default router;

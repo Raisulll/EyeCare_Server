@@ -17,6 +17,8 @@ router.post("/signup", async (req, res) => {
     patientPassword,
   } = req.body;
 
+  console.log(req.body);
+
   //Authenticate the user is already exists
   const checkEmail = `SELECT * FROM PATIENT WHERE PATIENT_MAIL = :patientEmail`;
   const checkEmailParams = { patientEmail };
@@ -73,6 +75,7 @@ router.post("/login", async (req, res) => {
     // i need to send all user data without password to the client
     const userInfo = {
       PatientId: user[0].PATIENT_ID,
+      patientImage: user[0].PATIENT_IMAGE,
       usertype: "patient",
     };
     console.log(userInfo);
@@ -257,7 +260,7 @@ router.post("/hospitalsignup", async (req, res) => {
   } = req.body;
 
   //Authenticate the user is already exists
-  const checkEmail = `SELECT * FROM HOSPITAL_MANAGER WHERE HOSPITAL_MAIL = :hospitalMail`;
+  const checkEmail = `SELECT * FROM HOSPITAL WHERE HOSPITAL_MAIL = :hospitalMail`;
   const checkEmailParams = { hospitalMail };
   const emailExists = await run_query(checkEmail, checkEmailParams);
   if (emailExists.length > 0) {
@@ -265,7 +268,7 @@ router.post("/hospitalsignup", async (req, res) => {
   }
 
   //Insert the user into the database
-  const query = `INSERT INTO HOSPITAL_MANAGER (HOSPITAL_NAME, HOSPITAL_MAIL, HOSPITAL_PHONE, HOSPITAL_DISTRICT, HOSPITAL_AREA, HOSPITAL_ROADNUMBER, HOSPITAL_LICENSE, HOSPITAL_PASSWORD) 
+  const query = `INSERT INTO HOSPITAL (HOSPITAL_NAME, HOSPITAL_MAIL, HOSPITAL_PHONE, HOSPITAL_DISTRICT, HOSPITAL_AREA, HOSPITAL_ROADNUMBER, HOSPITAL_LICENSE, HOSPITAL_PASSWORD) 
                  VALUES (:hospitalName, :hospitalMail, :hospitalPhone, :hospitalDistrict, :hospitalArea, :hospitalRoadNum, :hospitalLicense, :hospitalPassword)`;
 
   const params = {
@@ -319,5 +322,86 @@ router.post("/hospitalsignin", async (req, res) => {
     res.status(200).json(userInfo);
   }
 });   
+
+// Delivery Agency Signup route
+router.post("/deliverysignup", async (req, res) => {
+  const {
+    deliveryName,
+    deliveryMail,
+    deliveryPhone,
+    deliveryDistrict,
+    deliveryArea,
+    deliveryRoadNum,
+    deliveryLicense,
+    deliveryPassword,
+    deliveryCharge,
+    deliveryType,
+  } = req.body;
+
+  console.log(req.body);
+  //Authenticate the user is already exists
+  const checkEmail = `SELECT * FROM DELIVERY_AGENCY WHERE DELIVERY_AGENCY_EMAIL = :deliveryMail`;
+  const checkEmailParams = { deliveryMail };
+  const emailExists = await run_query(checkEmail, checkEmailParams);
+  if (emailExists.length > 0) {
+    return res.status(409).json({ error: "User already exists" });
+  }
+
+  //Insert the user into the database
+  const query = `INSERT INTO DELIVERY_AGENCY (DELIVERY_AGENCY_NAME, DELIVERY_AGENCY_EMAIL, DELIVERY_AGENCY_PHONE, DELIVERY_AGENCY_DISTRICT, DELIVERY_AGENCY_AREA, DELIVERY_AGENCY_ROADNUMBER, DELIVERY_AGENCY_LICENSE, DELIVERY_AGENCY_PASSWORD, DELIVERY_CHARGE, DELIVERY_AGENCY_STATUS) 
+                 VALUES (:deliveryName, :deliveryMail, :deliveryPhone, :deliveryDistrict, :deliveryArea, :deliveryRoadNum, :deliveryLicense, :deliveryPassword, :deliveryCharge, :deliveryType)`;
+
+  const params = {
+    deliveryName,
+    deliveryMail,
+    deliveryPhone,
+    deliveryDistrict,
+    deliveryArea,
+    deliveryRoadNum,
+    deliveryLicense,
+    deliveryPassword,
+    deliveryCharge,
+    deliveryType,
+  };
+
+  try {
+    await run_query(query, params);
+    res.status(200).json({
+      msg: "User created successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: "Error creating user" });
+  }
+});
+
+// Delivery Agency Login route
+router.post("/deliverysignin", async (req, res) => {
+  const { deliveryMail, deliveryPassword } = req.body;
+
+  if (!deliveryMail || !deliveryPassword)
+    return res.status(400).json({ error: "Please fill all the fields" });
+
+  //Authenticate the eamil is a user
+  const query = `SELECT * FROM DELIVERY_AGENCY WHERE DELIVERY_AGENCY_EMAIL = :deliveryMail`;
+  const params = { deliveryMail };
+  const user = await run_query(query, params);
+  if (user.length === 0) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  //Authenticate the password
+  if (user[0].DELIVERY_AGENCY_PASSWORD !== deliveryPassword) {
+    return res.status(401).json({ error: "Invalid password" });
+  } else {
+    // i need to send all user data without password to the client
+    const userInfo = {
+      deliveryId: user[0].DELIVERY_AGENCY_ID,
+      usertype: "delivery",
+    };
+    console.log(userInfo);
+    res.status(200).json(userInfo);
+  }
+});
 
 export default router;

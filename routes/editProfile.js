@@ -67,7 +67,50 @@ router.post("/doctorprofile", async (req, res) => {
       doctorLicense,
       timeslot,
       experience,
-      doctorId: Number(doctorId), // Ensure the ID is a number
+      doctorId: Number(doctorId), 
+    });
+    res.status(200).json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
+//update patient details
+
+router.post("/patientProfileData", async (req, res) => {
+  console.log("Patient profile data", req.body);
+  const {
+    patientId,
+    patientName,
+    patientPhone,
+    patientDOB,
+    patientDistrict,
+    patientArea,
+    patientRoadNumber,
+  } = req.body;
+  const updatePatientProfile = `
+    UPDATE PATIENT
+    SET
+      PATIENT_NAME = :patientName,
+      PATIENT_PHONE = :patientPhone,
+      PATIENT_DOB = TO_DATE(:patientDOB, 'YYYY-MM-DD'),
+      PATIENT_DISTRICT = :patientDistrict,
+      PATIENT_AREA = :patientArea,
+      PATIENT_ROADNUMBER = :patientRoadNumber
+    WHERE PATIENT_ID = :patientId
+  `;
+  try {
+    await run_query(updatePatientProfile, {
+      patientName,
+      patientPhone,
+      patientDOB,
+      patientDistrict,
+      patientArea,
+      patientRoadNumber,
+      patientId: Number(patientId),
     });
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
