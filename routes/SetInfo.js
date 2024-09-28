@@ -1,4 +1,5 @@
 import express from "express";
+import cloudinary from "../cloudenary.js"; 
 import { run_query } from "../db/connectiondb.js";
 
 const router = express.Router();
@@ -235,15 +236,14 @@ router.post("/removefromcart", async (req, res) => {
 // place order
 
 router.post("/placeorder", async (req, res) => {
-  const { orderId, patientId, deliveryAgencyId } = req.body;
-  console.log("data", orderId, patientId, deliveryAgencyId);
+  const { patientId, deliveryAgencyId } = req.body;
+  console.log("data",patientId, deliveryAgencyId);
 
   // Inserting into ORDERS
   try {
-    let query = `INSERT INTO ORDERS(ORDER_ID, PATIENT_ID,
-    DELIVERY_AGENCY_ID) VALUES(:orderId, :patientId, :deliveryAgencyId)`;
+    let query = `INSERT INTO ORDERS( PATIENT_ID,
+    DELIVERY_AGENCY_ID) VALUES(:patientId, :deliveryAgencyId)`;
     let params = {
-      orderId,
       patientId,
       deliveryAgencyId,
     };
@@ -252,7 +252,7 @@ router.post("/placeorder", async (req, res) => {
     console.error("Error inserting into ORDERS:", error);
     return res.status(500).json({ error: "Failed to insert into ORDERS" });
   }
-
+  
   try {
     const productfromcart = await run_query(
       `SELECT PRODUCT_ID, SHOP_ID, CART_QUANTITY FROM CART WHERE PATIENT_ID=${patientId}`,
@@ -270,9 +270,10 @@ router.post("/placeorder", async (req, res) => {
         PRODUCT_ID,
         SHOP_ID,
         ORDER_QUANTITY)
-        VALUES(:orderId, :productId, :shopId, :orderQuantity)`;
+        VALUES(
+        (SELECT MAX(ORDER_ID) FROM ORDERS),
+        :productId, :shopId, :orderQuantity)`;
         let params = {
-          orderId: orderId,
           productId: product.PRODUCT_ID,
           shopId: product.SHOP_ID,
           orderQuantity: product.CART_QUANTITY,
@@ -338,6 +339,42 @@ router.post("/acceptorder", async (req, res) => {
   } catch (error) {
     console.error("Error accepting order:", error);
     res.status(500).json({ error: "Failed to accept order" });
+  }
+});
+
+// add product to supply
+router.post("/productstosupply", async (req, res) => {
+  const { productName, productPrice, productDescription, productImage } = req.body;
+  console.log("Proudct name", productName);
+  try {
+    const cloudinaryResponse = await cloudinary.uploader.upload(productImage, {
+      folder: "EyeCare",
+      unique_filename: true,
+      timeout: 60000,
+      transformation: [
+        {
+          width: 800,
+          height: 600,
+          crop: "limit",
+        },
+      ],
+    });
+    console.log(cloudinaryResponse);
+    const query = await run_query(`INSERT INTO SUPPLY
+      (PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION, PRODUCT_IMAGE)
+      VALUES(:productName, :productPrice, :productDescription, :productImage)`, {
+      productName,
+      productPrice,
+      productDescription,
+      productImage: cloudinaryResponse.secure_url,
+    })
+    res.status(200).json({
+      message: "Product added successfully",
+      url: cloudinaryResponse.secure_url,
+     });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res.status(500).json({ error: "Failed to add product" });
   }
 });
 

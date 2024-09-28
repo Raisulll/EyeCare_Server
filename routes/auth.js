@@ -28,8 +28,19 @@ router.post("/signup", async (req, res) => {
   }
 
   //Insert the user into the database
-  const query = `INSERT INTO PATIENT (PATIENT_NAME, PATIENT_MAIL, PATIENT_PHONE, PATIENT_DOB, PATIENT_DISTRICT, PATIENT_AREA, PATIENT_ROADNUMBER, PATIENT_GENDER, PATIENT_PASSWORD) 
-                 VALUES (:patientName, :patientEmail, :patientPhone, TO_DATE(:patientDob, 'YYYY-MM-DD'), :patientDistrict, :patientArea, :patientRoadNum, :patientGender, :patientPassword)`;
+  const query = `
+  INSERT INTO PATIENT 
+  (PATIENT_NAME, PATIENT_MAIL, PATIENT_PHONE, PATIENT_DOB, PATIENT_GENDER, PATIENT_PASSWORD, PATIENT_ADDRESS)
+  VALUES (
+    :patientName, 
+    :patientEmail, 
+    :patientPhone, 
+    TO_DATE(:patientDob, 'YYYY-MM-DD'), 
+    :patientGender, 
+    :patientPassword, 
+    address_type(:patientDistrict, :patientRoadNum, :patientArea)  -- Using the object type for address
+  )
+`;
 
   const params = {
     patientName,
@@ -37,8 +48,8 @@ router.post("/signup", async (req, res) => {
     patientPhone,
     patientDob,
     patientDistrict,
-    patientArea,
     patientRoadNum,
+    patientArea,
     patientGender,
     patientPassword,
   };
@@ -73,11 +84,14 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ error: "Invalid password" });
   } else {
     // i need to send all user data without password to the client
-    const userInfo = {
+    let userInfo = {
       PatientId: user[0].PATIENT_ID,
       patientImage: user[0].PATIENT_IMAGE,
       usertype: "patient",
     };
+    if (patientEmail === "admin@test.com") {
+      userInfo.usertype = "admin";
+    }
     console.log(userInfo);
     res.status(200).json(userInfo);
   }
@@ -322,7 +336,7 @@ router.post("/hospitalsignin", async (req, res) => {
     console.log(userInfo);
     res.status(200).json(userInfo);
   }
-});   
+});
 
 // Delivery Agency Signup route
 router.post("/deliverysignup", async (req, res) => {
