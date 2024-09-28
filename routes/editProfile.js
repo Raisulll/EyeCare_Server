@@ -119,4 +119,49 @@ router.post("/patientProfileData", async (req, res) => {
   }
 });
 
+
+//update doctor data
+router.post("/doctorProfileData", async (req, res) => {
+  console.log("Doctor profile data", req.body);
+  const {
+    doctorId,
+    doctorName,
+    doctorMail,
+    doctorPhone,
+    doctorDistrict,
+    doctorArea,
+    doctorRoadNumber,
+    doctorSpeciality,
+  } = req.body;
+  const updatePatientProfile = `
+    UPDATE DOCTOR
+    SET
+      DOCTOR_NAME = :doctorName,
+      DOCTOR_MAIL = :doctorMail,
+      DOCTOR_PHONE = :doctorPhone,
+      DOCTOR_DISTRICT = :doctorDistrict,
+      DOCTOR_AREA = :doctorArea,
+      DOCTOR_ROADNUMBER = :doctorRoadNumber,
+      DOCTOR_SPECIALITY = :doctorSpeciality
+    WHERE DOCTOR_ID = :doctorId
+  `;
+  try {
+    await run_query(updatePatientProfile, {
+      doctorName,
+      doctorMail,
+      doctorPhone,
+      doctorDistrict,
+      doctorArea,
+      doctorRoadNumber,
+      doctorSpeciality,
+      doctorId: Number(doctorId),
+    });
+    res.status(200).json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
 export default router;

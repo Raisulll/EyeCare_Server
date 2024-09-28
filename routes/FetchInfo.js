@@ -7,13 +7,22 @@ const router = express.Router();
 
 // fetch doctor data
 router.get("/doctordata", async (req, res) => {
-  const doctorId = req.query.doctorid;
+  const doctorId = req.query.doctorId;
   try {
+    // const doctorData = await run_query(
+    //   `SELECT * FROM DOCTOR WHERE DOCTOR_ID=${doctorId}`,
+    //   {}
+    // );
     const doctorData = await run_query(
-      `SELECT * FROM DOCTOR WHERE DOCTOR_ID=${doctorId}`,
+      `SELECT DOCTOR_NAME, DOCTOR_MAIL, DOCTOR_PHONE, DOCTOR_DISTRICT, DOCTOR_AREA, DOCTOR_ROADNUMBER, DOCTOR_IMAGE, DOCTOR_SPECIALITY,DOCTOR_PAYMENT,
+      DOCTOR_TIMESLOT,HOSPITAL_NAME
+      FROM DOCTOR D, HOSPITAL H
+      WHERE
+      DOCTOR_ID=${doctorId} AND
+      D.HOSPITAL_ID = H.HOSPITAL_ID`,
       {}
     );
-    // console.log(doctorData);
+    console.log(doctorData);
     res.status(200).json(doctorData[0]);
   } catch (error) {
     // console.log(error);
@@ -196,14 +205,38 @@ router.get("/products", async (req, res) => {
   const userId = req.query.userId;
   try {
     const products = await run_query(
-      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, PRODUCT_IMAGE,QUANTITY, SHOP_ID
-      FROM SUPPLY S, INVENTORY I
+      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, PRODUCT_IMAGE,QUANTITY, SH.SHOP_ID, SH.SHOP_NAME
+      FROM SUPPLY S, INVENTORY I, SHOP SH
       WHERE
+      I.SHOP_ID = SH.SHOP_ID AND
       S.PRODUCT_ID = I.PRODUCT_ID AND
       QUANTITY > 0`,
       {}
     );
     // console.log(products);1
+    res.status(200).json(products);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+//search products
+router.get("/productsearch", async (req, res) => {
+  const search = req.query.search;
+  console.log(search);
+  try {
+    const products = await run_query(
+      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, PRODUCT_IMAGE,QUANTITY, SH.SHOP_ID, SH.SHOP_NAME
+      FROM SUPPLY S, INVENTORY I, SHOP SH
+      WHERE
+      I.SHOP_ID = SH.SHOP_ID AND
+      S.PRODUCT_ID = I.PRODUCT_ID AND
+      QUANTITY > 0 AND
+      LOWER(PRODUCT_NAME) LIKE '%${search}%'`,
+      {}
+    );
+    console.log(products);
     res.status(200).json(products);
   } catch (error) {
     // console.log(error);
@@ -217,11 +250,13 @@ router.get("/cartitems", async (req, res) => {
   console.log(patientId);
   try {
     const cartItems = await run_query(
-      `SELECT PRODUCT_NAME, PRODUCT_PRICE,C.PRODUCT_ID, QUANTITY, CART_QUANTITY
-      FROM CART C, SUPPLY S, INVENTORY I
+      `SELECT PRODUCT_NAME, PRODUCT_PRICE,C.PRODUCT_ID, QUANTITY, CART_QUANTITY,PRODUCT_IMAGE, SHOP_NAME, SH.SHOP_ID
+      FROM CART C, SUPPLY S, INVENTORY I, SHOP SH
       WHERE
       C.PRODUCT_ID = S.PRODUCT_ID AND
       S.PRODUCT_ID = I.PRODUCT_ID AND
+      C.SHOP_ID = I.SHOP_ID AND
+      C.SHOP_ID = SH.SHOP_ID AND
       C.PATIENT_ID=${patientId}`,
       {}
     );
@@ -238,7 +273,7 @@ router.get("/deliveryagency", async (req, res) => {
   try {
     const deliveryagency = `SELECT DELIVERY_AGENCY_ID, DELIVERY_AGENCY_NAME, DELIVERY_AGENCY_STATUS,DELIVERY_CHARGE FROM DELIVERY_AGENCY`;
     const deliveryagencyInfo = await run_query(deliveryagency, {});
-    console.log(deliveryagencyInfo);
+    // console.log(deliveryagencyInfo);
     res.status(200).json(deliveryagencyInfo);
   } catch (error) {
     console.error("Error fetching delivery agency:", error);
@@ -285,14 +320,14 @@ router.get("/deliverydata", async (req, res) => {
     const deliverydata = await run_query(
       `SELECT * FROM  DELIVERY_AGENCY WHERE DELIVERY_AGENCY_ID=${deliveryId}`,
       {}
-    )
+    );
     console.log(deliverydata);
     res.status(200).json(deliverydata);
   } catch (error) {
     console.error("Error fetching delivery data:", error);
     res.status(500).json({ error: "Failed to fetch delivery data" });
   }
-})
+});
 
 // fetch all orders for a specific delivery agency
 router.get("/ordersfordeliveryagency", async (req, res) => {
@@ -323,7 +358,9 @@ router.get("/ordersfordeliveryagency", async (req, res) => {
     res.status(200).json(uniqueOrders);
   } catch (error) {
     console.error("Error fetching orders for delivery agency:", error);
-    res.status(500).json({ error: "Failed to fetch orders for delivery agency" });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch orders for delivery agency" });
   }
 });
 

@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/doctors", async (req, res) => {
   try {
     const query =
-      "SELECT DOCTOR_ID, DOCTOR_NAME, DOCTOR_SPECIALITY, DOCTOR_PAYMENT FROM DOCTOR";
+      "SELECT DOCTOR_ID, DOCTOR_NAME,DOCTOR_IMAGE, DOCTOR_SPECIALITY, DOCTOR_PAYMENT FROM DOCTOR";
     const doctors = await run_query(query, []);
     // console.log(doctors);
     res.json(doctors);
@@ -16,6 +16,27 @@ router.get("/doctors", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch doctors" });
   }
 });
+
+//search doctors
+router.get("/doctorsearch", async (req, res) => {
+  const search = req.query.search;
+  console.log(search);
+  try {
+    const doctors = await run_query(
+      `SELECT DOCTOR_ID, DOCTOR_NAME, DOCTOR_SPECIALITY, DOCTOR_PAYMENT, DOCTOR_IMAGE
+      FROM DOCTOR
+      WHERE
+      LOWER(DOCTOR_NAME) LIKE '%${search}%'`,
+      {}
+    );
+    console.log(doctors);
+    res.status(200).json(doctors);
+  }
+  catch (error) {
+    console.error("Error fetching doctors:", error);
+    res.status(500).json({ error: "Failed to fetch doctors" });
+  }
+})
 
 // Route to fetch time slots for a specific doctor
 router.get("/doctorstime", async (req, res) => {
@@ -55,23 +76,22 @@ router.get("/upcommingappointments", async (req, res) => {
         A.APPOINTMENT_TIME, 
         A.APPOINTMENT_STATUS, 
         D.DOCTOR_NAME, 
-        D.DOCTOR_SPECIALITY
+        D.DOCTOR_SPECIALITY,
+        H.HOSPITAL_NAME,
+        D.DOCTOR_IMAGE
       FROM 
-        APPOINTMENT A, DOCTOR D, PATIENT P
+        APPOINTMENT A, DOCTOR D, PATIENT P, HOSPITAL H
       WHERE
         A.PATIENT_ID = P.PATIENT_ID AND
         A.DOCTOR_ID = D.DOCTOR_ID AND
         P.PATIENT_ID = :patientId AND
-        A.APPOINTMENT_STATUS='Pending'
+        A.APPOINTMENT_STATUS='Pending' AND
+        H.HOSPITAL_ID = A.HOSPITAL_ID
     `;
 
     // Run the query with parameterized input
     const appointments = await run_query(query, { patientId });
 
-    // Log the results for debugging purposes
-    // console.log(appointments);
-
-    // Send the results back as a JSON response
     res.json(appointments);
   } catch (error) {
     console.error(
@@ -100,14 +120,17 @@ router.get("/previousappointments", async (req, res) => {
         A.APPOINTMENT_TIME, 
         A.APPOINTMENT_STATUS, 
         D.DOCTOR_NAME, 
-        D.DOCTOR_SPECIALITY
+        D.DOCTOR_SPECIALITY,
+        H.HOSPITAL_NAME,
+        D.DOCTOR_IMAGE
       FROM 
-        APPOINTMENT A, DOCTOR D, PATIENT P
+        APPOINTMENT A, DOCTOR D, PATIENT P, HOSPITAL H
       WHERE
         A.PATIENT_ID = P.PATIENT_ID AND
         A.DOCTOR_ID = D.DOCTOR_ID AND
         P.PATIENT_ID = :patientId AND
-        A.APPOINTMENT_STATUS='Completed'
+        A.APPOINTMENT_STATUS='Completed' AND
+        H.HOSPITAL_ID = A.HOSPITAL_ID
     `;
 
     // Run the query with parameterized input
@@ -133,13 +156,14 @@ router.get("/previousappointments", async (req, res) => {
 
 // Route to book a new appointment
 router.post("/appointmentsdata", async (req, res) => {
+  console.log("Request Body: ", req.body.data);
 
- 
-  const doctor = req.body.appointment.doctor;
-  const time = req.body.appointment.time;
-  const date = req.body.appointment.date;
-  const patientId = req.body.appointment.patientId;
-  console.log(req.body, doctor, time, date, patientId);
+  // Proper destructuring of req.body
+  const { doctor, time, date, patientId } = req.body.data;
+
+  // Log to verify values
+  console.log("Extracted Data: ", doctor, time, date, patientId);
+
   // Check if all required fields are provided
   if (!doctor || !time || !date || !patientId) {
     return res
@@ -148,27 +172,25 @@ router.post("/appointmentsdata", async (req, res) => {
   }
 
   try {
-    // console.log(req.body);
-
     // SQL query to insert a new appointment
     const query = `
-            INSERT INTO APPOINTMENT (
-                APPOINTMENT_DATE, 
-                APPOINTMENT_TIME, 
-                APPOINTMENT_STATUS, 
-                PATIENT_ID, 
-                DOCTOR_ID
-            ) 
-            VALUES (
-                TO_DATE(:bind_date, 'YYYY-MM-DD'), 
-                :bind_time, 
-                'Pending', 
-                :bind_patientId, 
-                :bind_doctor
-            )
-        `;
+      INSERT INTO APPOINTMENT (
+        APPOINTMENT_DATE, 
+        APPOINTMENT_TIME, 
+        APPOINTMENT_STATUS, 
+        PATIENT_ID, 
+        DOCTOR_ID
+      ) 
+      VALUES (
+        TO_DATE(:bind_date, 'YYYY-MM-DD'), 
+        :bind_time, 
+        'Pending', 
+        :bind_patientId, 
+        :bind_doctor
+      )
+    `;
 
-    // Running the query with provided values
+    // Run the query with the extracted values
     await run_query(query, {
       bind_date: date,
       bind_time: time,
@@ -183,6 +205,7 @@ router.post("/appointmentsdata", async (req, res) => {
     res.status(500).json({ error: "Failed to book appointment" });
   }
 });
+
 
 
 

@@ -34,4 +34,39 @@ router.post("/patientProfile", async (req, res) => {
   }
 });
 
+// set doctorProfile image
+router.post("/doctorProfile", async (req, res) => {
+  const { imageBase64, doctorId } = req.body;
+  console.log("server", doctorId);
+  try {
+    const cloudinaryResponse = await cloudinary.uploader.upload(imageBase64, {
+      folder: "EyeCare",
+      unique_filename: true,
+      timeout: 60000,
+      transformation: [
+        {
+          width: 800,
+          height: 600,
+          crop: "limit",
+        },
+      ],
+    });
+    console.log(cloudinaryResponse);
+    const query = await run_query(
+      `UPDATE DOCTOR SET DOCTOR_IMAGE = :image WHERE DOCTOR_ID = :id`,
+      {
+        image: cloudinaryResponse.secure_url,
+        id: doctorId,
+      }
+    );
+    res.status(200).json({
+      message: "Image uploaded successfully",
+      url: cloudinaryResponse.secure_url,
+    });
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).json({ message: "Error uploading image." });
+  }
+})
+
 export default router;

@@ -138,16 +138,17 @@ router.post("/addproduct", async (req, res) => {
 
 // add product to cart
 router.post("/addtocart", async (req, res) => {
-  const { userId, productId, shopId } = req.body;
-  console.log(userId, productId, shopId);
+  const { userId, productId, shopId,cartQuantity } = req.body;
+  console.log(userId, productId, shopId, cartQuantity);
   try {
     let query = `
       SELECT * FROM CART 
       WHERE PATIENT_ID=:userId AND
-      PRODUCT_ID=:productId`;
+      PRODUCT_ID=:productId AND SHOP_ID=:shopId`;
     let params = {
       userId,
       productId,
+      shopId
     };
     const result = await run_query(query, params);
     console.log(result);
@@ -156,20 +157,23 @@ router.post("/addtocart", async (req, res) => {
         UPDATE CART
         SET CART_QUANTITY = CART_QUANTITY + 1
         WHERE PATIENT_ID=:userId AND
-        PRODUCT_ID=:productId`;
+        PRODUCT_ID=:productId AND
+        SHOP_ID=:shopId`;
       params = {
         userId,
         productId,
+        shopId,
       };
       await run_query(query, params);
     } else {
       query = `
         INSERT INTO CART(PATIENT_ID, PRODUCT_ID, SHOP_ID, CART_QUANTITY)
-        VALUES(:userId, :productId, :shopId, 1)`;
+        VALUES(:userId, :productId, :shopId, :cartQuantity)`;
       params = {
         userId,
         productId,
         shopId,
+        cartQuantity,
       };
       await run_query(query, params);
     }
@@ -182,18 +186,20 @@ router.post("/addtocart", async (req, res) => {
 
 // update cart quantity
 router.post("/updatecartquantity", async (req, res) => {
-  const { productId, quantity, patientId } = req.body;
+  const { productId, quantity, patientId,shopId } = req.body;
   console.log("server", productId, quantity, patientId);
   try {
     const query = `
       UPDATE CART
       SET CART_QUANTITY = :quantity
       WHERE PRODUCT_ID=:productId AND
-      PATIENT_ID=:patientId`;
+      PATIENT_ID=:patientId AND
+      SHOP_ID=:shopId`;
     const params = {
       productId,
       quantity,
       patientId,
+      shopId
     };
     await run_query(query, params);
     res.status(200).json({ message: "Cart quantity updated successfully" });
@@ -205,16 +211,18 @@ router.post("/updatecartquantity", async (req, res) => {
 
 // remove from cart
 router.post("/removefromcart", async (req, res) => {
-  const { productId, patientId } = req.body;
+  const { productId, patientId,shopId} = req.body;
   console.log("server", productId, patientId);
   try {
     const query = `
       DELETE FROM CART
       WHERE PRODUCT_ID=:productId AND
-      PATIENT_ID=:patientId`;
+      PATIENT_ID=:patientId AND
+      SHOP_ID=:shopId`;
     const params = {
       productId,
       patientId,
+      shopId
     };
     await run_query(query, params);
     res.status(200).json({ message: "Product removed from cart successfully" });
