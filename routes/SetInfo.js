@@ -378,4 +378,24 @@ router.post("/productstosupply", async (req, res) => {
   }
 });
 
+// delivery confirmed
+router.get("/done", async (req, res) => {
+  const orderId = req.body.orderId;
+  console.log("server", orderId);
+  try {
+    const query = `
+    UPDATE ORDERS
+    SET ORDER_STATUS = 'Delivered'
+    WHERE ORDER_ID=:orderId`;
+    const params = {
+      orderId,
+    };
+    await run_query(query, params);
+    res.status(200).json({ message: "Order delivered successfully" });
+  } catch (error) {
+    console.error("Error delivering order:", error);
+    res.status(500).json({ error: "Failed to deliver order" });
+  }
+});
+
 export default router;

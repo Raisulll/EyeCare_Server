@@ -278,7 +278,7 @@ router.get("/deliveryagency", async (req, res) => {
 });
 
 // fetch all orders which are not delivered
-router.get("/orders", async (req, res) => {
+router.get("/ordersforshop", async (req, res) => {
   const shopId = req.query.shopId;
   try {
     const orders = await run_query(
@@ -287,18 +287,21 @@ router.get("/orders", async (req, res) => {
         PRODUCT_NAME,
         ORDER_QUANTITY,
         PATIENT_NAME,
-        ORDER_DATE
+        ORDER_DATE,
+        DELIVERY_AGENCY_NAME
       FROM
         ORDERS           O,
         ORDERED_PRODUCTS OP,
         SUPPLY           S,
-        PATIENT          P
+        PATIENT          P,
+        DELIVERY_AGENCY  D
       WHERE
         O.ORDER_ID = OP.ORDER_ID
         AND OP.PRODUCT_ID = S.PRODUCT_ID
         AND O.PATIENT_ID = P.PATIENT_ID
         AND SHOP_ID = ${shopId}
-        AND ORDER_STATUS = 'Pending'`,
+        AND ORDER_STATUS = 'Pending'
+        AND O.DELIVERY_AGENCY_ID=D.DELIVERY_AGENCY_ID`,
       {}
     );
     console.log(orders);
@@ -360,6 +363,79 @@ router.get("/ordersfordeliveryagency", async (req, res) => {
   }
 });
 
+// fetch all order
+router.get("/prevorders", async (req, res) => {
+  const patientId = req.query.patientId;
+  try {
+    const orders = await run_query(
+      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY
+      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU
+      WHERE
+      O.ORDER_ID = OP.ORDER_ID AND
+      OP.PRODUCT_ID = SU.PRODUCT_ID AND
+      OP.SHOP_ID = S.SHOP_ID AND
+      O.PATIENT_ID = ${patientId}
+      O.ORDER_STATUS = 'Delivered'
+      `,
+      {}
+    );
+    // console.log(orders);
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+})
+
+router.get("/upcomingorders", async (req, res) => {
+  const patientId = req.query.patientId;
+  try {
+    const orders = await run_query(
+      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY
+      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU
+      WHERE
+      O.ORDER_ID = OP.ORDER_ID AND
+      OP.PRODUCT_ID = SU.PRODUCT_ID AND
+      OP.SHOP_ID = S.SHOP_ID AND
+      O.PATIENT_ID = ${patientId}
+      O.ORDER_STATUS = 'Accepted'
+      `,
+      {}
+    );
+    // console.log(orders);
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  };
+} )
+
+
+// fetch all orders for a specific delivery agency
+
+router.get("/ordersfordelivery", async (req, res) => {
+  const deliveryId = req.query.deliveryId;
+  try {
+    const orders = await run_query(
+      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY,PATIENT_NAME, PATIENT_PHONE, PATIENT_ADDRESS
+      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU, PATIENT P
+      WHERE
+      O.ORDER_ID = OP.ORDER_ID AND
+      OP.PRODUCT_ID = SU.PRODUCT_ID AND
+      OP.SHOP_ID = S.SHOP_ID AND
+      O.DELIVERY_AGENCY_ID = ${deliveryId} AND
+      O.ORDER_STATUS = 'Accepted'
+      AND O.PATIENT_ID = P.PATIENT_ID
+      `,
+      {}
+    );
+    console.log(orders);
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders for delivery agency:", error);
+    res.status(500).json({ error: "Failed to fetch orders for delivery agency" });
+  }
+});
 
 
 export default router;

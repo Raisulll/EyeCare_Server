@@ -581,3 +581,62 @@ ALTER TABLE SHOP
   ADD SHOP_IMAGE VARCHAR(
     255
   ) DEFAULT 'https://res.cloudinary.com/dnn7v3kkw/image/upload/v1727614035/EyeCare/iweqwimyp0zcbbc74cro.png' NOT NULL;
+
+  SELECT
+  *
+FROM
+  ORDERED_PRODUCTS;
+
+
+SELECT
+  O.ORDER_ID,
+  PRODUCT_NAME,
+  ORDER_QUANTITY,
+  PATIENT_NAME,
+  ORDER_DATE
+FROM
+  ORDERS           O,
+  ORDERED_PRODUCTS OP,
+  SUPPLY           S,
+  PATIENT          P
+WHERE
+  O.ORDER_ID = OP.ORDER_ID
+  AND OP.PRODUCT_ID = S.PRODUCT_ID
+  AND O.PATIENT_ID = P.PATIENT_ID
+  AND SHOP_ID = 5
+  AND ORDER_STATUS = 'Pending';
+
+  ALTER TABLE HOSPITAL
+  ADD HOSPITAL_IMAGE VARCHAR(255) DEFAULT 'https://res.cloudinary.com/dnn7v3kkw/image/upload/v1727619556/EyeCare/c8soph9rqjavtoyd0fbl.png' NOT NULL;
+
+
+ALTER TABLE ORDERED_PRODUCTS ADD STATUS VARCHAR(255) DEFAULT 'Pending' NOT NULL;
+
+
+SELECT
+  O.ORDER_ID,
+  ORDER_DATE,
+  ORDER_STATUS,
+  SHOP_NAME,
+  PRODUCT_NAME,
+  ORDER_QUANTITY
+FROM
+  ORDERS           O,
+  ORDERED_PRODUCTS OP,
+  SHOP             S,
+  SUPPLY           SU
+WHERE
+  O.ORDER_ID = OP.ORDER_ID
+  AND OP.PRODUCT_ID = SU.PRODUCT_ID
+  AND OP.SHOP_ID = S.SHOP_ID
+  AND O.PATIENT_ID = 61
+  AND ORDER_STATUS = 'Accepted';
+
+
+  SELECT
+  *
+FROM
+  DELIVERY_AGENCY;
+
+
+alter table DELIVERY_AGENCY add DELIVERY_AGENCY_IMAGE varchar(255) default 'https://res.cloudinary.com/dnn7v3kkw/image/upload/v1727634683/EyeCare/uxoercbj1e9cxwf7taku.png' not null;
