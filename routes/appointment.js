@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/doctors", async (req, res) => {
   try {
     const query =
-      "SELECT DOCTOR_ID, DOCTOR_NAME,DOCTOR_IMAGE, DOCTOR_SPECIALITY, DOCTOR_PAYMENT FROM DOCTOR";
+      "SELECT * FROM DOCTOR_VIEW";
     const doctors = await run_query(query, []);
     // console.log(doctors);
     res.json(doctors);
@@ -23,8 +23,8 @@ router.get("/doctorsearch", async (req, res) => {
   console.log(search);
   try {
     const doctors = await run_query(
-      `SELECT DOCTOR_ID, DOCTOR_NAME, DOCTOR_SPECIALITY, DOCTOR_PAYMENT, DOCTOR_IMAGE
-      FROM DOCTOR
+      `SELECT *
+      FROM DOCTOR_VIEW
       WHERE
       LOWER(DOCTOR_NAME) LIKE '%${search}%'`,
       {}
@@ -70,23 +70,7 @@ router.get("/upcommingappointments", async (req, res) => {
 
   try {
     const query = `
-      SELECT 
-        A.APPOINTMENT_ID, 
-        A.APPOINTMENT_DATE, 
-        A.APPOINTMENT_TIME, 
-        A.APPOINTMENT_STATUS, 
-        D.DOCTOR_NAME, 
-        D.DOCTOR_SPECIALITY,
-        H.HOSPITAL_NAME,
-        D.DOCTOR_IMAGE
-      FROM 
-        APPOINTMENT A, DOCTOR D, PATIENT P, HOSPITAL H
-      WHERE
-        A.PATIENT_ID = P.PATIENT_ID AND
-        A.DOCTOR_ID = D.DOCTOR_ID AND
-        P.PATIENT_ID = :patientId AND
-        A.APPOINTMENT_STATUS='Pending' AND
-        H.HOSPITAL_ID = A.HOSPITAL_ID
+      SELECT * FROM UPCOMING_APPOINTMENT_VIEW WHERE PATIENT_ID = :patientId
     `;
 
     // Run the query with parameterized input
@@ -114,23 +98,7 @@ router.get("/previousappointments", async (req, res) => {
 
   try {
     const query = `
-      SELECT 
-        A.APPOINTMENT_ID, 
-        A.APPOINTMENT_DATE, 
-        A.APPOINTMENT_TIME, 
-        A.APPOINTMENT_STATUS, 
-        D.DOCTOR_NAME, 
-        D.DOCTOR_SPECIALITY,
-        H.HOSPITAL_NAME,
-        D.DOCTOR_IMAGE
-      FROM 
-        APPOINTMENT A, DOCTOR D, PATIENT P, HOSPITAL H
-      WHERE
-        A.PATIENT_ID = P.PATIENT_ID AND
-        A.DOCTOR_ID = D.DOCTOR_ID AND
-        P.PATIENT_ID = :patientId AND
-        A.APPOINTMENT_STATUS='Completed' AND
-        H.HOSPITAL_ID = A.HOSPITAL_ID
+      SELECT * FROM PREVIOUS_APPOINTMENT_VIEW WHERE PATIENT_ID = :patientId
     `;
 
     // Run the query with parameterized input

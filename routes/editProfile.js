@@ -97,9 +97,7 @@ router.post("/patientProfileData", async (req, res) => {
       PATIENT_NAME = :patientName,
       PATIENT_PHONE = :patientPhone,
       PATIENT_DOB = TO_DATE(:patientDOB, 'YYYY-MM-DD'),
-      PATIENT_DISTRICT = :patientDistrict,
-      PATIENT_AREA = :patientArea,
-      PATIENT_ROADNUMBER = :patientRoadNumber
+      PATIENT_ADDRESS=address_type(:patientDistrict,:patientArea,:patientRoadNumber)
     WHERE PATIENT_ID = :patientId
   `;
   try {
