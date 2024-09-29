@@ -9,10 +9,6 @@ const router = express.Router();
 router.get("/doctordata", async (req, res) => {
   const doctorId = req.query.doctorId;
   try {
-    // const doctorData = await run_query(
-    //   `SELECT * FROM DOCTOR WHERE DOCTOR_ID=${doctorId}`,
-    //   {}
-    // );
     const doctorData = await run_query(
       `SELECT DOCTOR_NAME, DOCTOR_MAIL, DOCTOR_PHONE, DOCTOR_DISTRICT, DOCTOR_AREA, DOCTOR_ROADNUMBER, DOCTOR_IMAGE, DOCTOR_SPECIALITY,DOCTOR_PAYMENT,
       DOCTOR_TIMESLOT,HOSPITAL_NAME
@@ -363,5 +359,7 @@ router.get("/ordersfordeliveryagency", async (req, res) => {
       .json({ error: "Failed to fetch orders for delivery agency" });
   }
 });
+
+
 
 export default router;

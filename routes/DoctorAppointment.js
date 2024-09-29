@@ -1,5 +1,5 @@
 import express from "express";
-import { run_query } from "../db/connectiondb.js";
+import { run_query, runCursorQuery } from "../db/connectiondb.js";
 
 const router = express.Router();
 
@@ -8,20 +8,11 @@ router.get("/senddoctorappointments", async (req, res) => {
   const { doctorId } = req.query; // Get doctorId from query parameters
   // console.log(doctorId);
   try {
-    const query = `
-      SELECT A.APPOINTMENT_ID,A.APPOINTMENT_DATE, A.APPOINTMENT_TIME, A.APPOINTMENT_STATUS, 
-             P.PATIENT_NAME
-      FROM APPOINTMENT A, PATIENT P
-      WHERE
-      A.DOCTOR_ID = :doctorId AND
-      A.PATIENT_ID = P.PATIENT_ID AND
-      A.APPOINTMENT_STATUS = 'Pending'
-    `;
+    const appointments = await runCursorQuery(
+      `BEGIN GET_DOCTOR_APPOINTMENTS(:doctorId, :cursor); END;`,
+      { doctorId }
+    );
 
-    const appointments = await run_query(query, [doctorId]);
-
-    // console.log(appointments);
-    // Ensure data is sent in the correct format (array of objects)
     const formattedAppointments = appointments.map((appointment) => ({
       APPOINTMENT_ID: appointment.APPOINTMENT_ID,
       APPOINTMENT_DATE: appointment.APPOINTMENT_DATE,
@@ -35,6 +26,19 @@ router.get("/senddoctorappointments", async (req, res) => {
   } catch (error) {
     console.error("Error fetching appointments:", error);
     res.status(500).json({ error: "Failed to fetch appointments" });
+    if (error.errorNum === 20001) {
+      res.status(404).json({ error: "No pending appointments found for the given doctor." });
+    }
+    else if(error.errorNum === 20002) {
+      res.status(405).json({ error: "No appointments found for the given doctor." });
+    }
+    else if(error.errorNum === 20003) {
+      res
+        .status(406)
+        .json({
+          error: "An unexpected error occurred. Please try again later.",
+        });
+    }
   }
 });
 

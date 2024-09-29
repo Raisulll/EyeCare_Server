@@ -572,3 +572,12 @@ CREATE OR REPLACE VIEW PREVIOUS_APPOINTMENT_VIEW AS
     AND A.DOCTOR_ID = D.DOCTOR_ID
     AND A.APPOINTMENT_STATUS='Completed'
     AND H.HOSPITAL_ID = A.HOSPITAL_ID;
+
+
+
+---------------------------------------------------
+alter table SHOP drop column SHOP_IMAGE;
+ALTER TABLE SHOP
+  ADD SHOP_IMAGE VARCHAR(
+    255
+  ) DEFAULT 'https://res.cloudinary.com/dnn7v3kkw/image/upload/v1727614035/EyeCare/iweqwimyp0zcbbc74cro.png' NOT NULL;
