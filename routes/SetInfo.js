@@ -414,4 +414,34 @@ router.post("/done", async (req, res) => {
   }
 });
 
+router.post("/updatehospital", async (req, res) => {
+  const { hospitalId, hospitalName, hospitalDistrict, hospitalArea, hospitalRoadnumber, hospitalPhone, hospitalEmail } = req.body;
+  console.log("server", hospitalRoadnumber);
+  try {
+    const query = `
+      UPDATE HOSPITAL
+      SET HOSPITAL_NAME = :hospitalName,
+      HOSPITAL_DISTRICT = :hospitalDistrict,
+      HOSPITAL_AREA = :hospitalArea,
+      HOSPITAL_ROADNUMBER = :hospitalRoadnumber,
+      HOSPITAL_PHONE = :hospitalPhone,
+      HOSPITAL_MAIL = :hospitalEmail
+      WHERE HOSPITAL_ID = :hospitalId`;
+    const params = {
+      hospitalId,
+      hospitalName,
+      hospitalDistrict,
+      hospitalArea,
+      hospitalRoadnumber,
+      hospitalPhone,
+      hospitalEmail
+    };
+    await run_query(query, params);
+    res.status(200).json({ message: "Hospital updated successfully" });
+  } catch (error) {
+    console.error("Error updating hospital:", error);
+    res.status(500).json({ error: "Failed to update hospital" });
+  }
+});
+
 export default router;
