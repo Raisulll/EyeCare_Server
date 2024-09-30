@@ -1,5 +1,5 @@
 import express from "express";
-import cloudinary from "../cloudenary.js"; 
+import cloudinary from "../cloudenary.js";
 import { run_query } from "../db/connectiondb.js";
 
 const router = express.Router();
@@ -139,7 +139,7 @@ router.post("/addproduct", async (req, res) => {
 
 // add product to cart
 router.post("/addtocart", async (req, res) => {
-  const { userId, productId, shopId,cartQuantity } = req.body;
+  const { userId, productId, shopId, cartQuantity } = req.body;
   console.log(userId, productId, shopId, cartQuantity);
   try {
     let query = `
@@ -149,7 +149,7 @@ router.post("/addtocart", async (req, res) => {
     let params = {
       userId,
       productId,
-      shopId
+      shopId,
     };
     const result = await run_query(query, params);
     console.log(result);
@@ -187,7 +187,7 @@ router.post("/addtocart", async (req, res) => {
 
 // update cart quantity
 router.post("/updatecartquantity", async (req, res) => {
-  const { productId, quantity, patientId,shopId } = req.body;
+  const { productId, quantity, patientId, shopId } = req.body;
   console.log("server", productId, quantity, patientId);
   try {
     const query = `
@@ -200,7 +200,7 @@ router.post("/updatecartquantity", async (req, res) => {
       productId,
       quantity,
       patientId,
-      shopId
+      shopId,
     };
     await run_query(query, params);
     res.status(200).json({ message: "Cart quantity updated successfully" });
@@ -212,7 +212,7 @@ router.post("/updatecartquantity", async (req, res) => {
 
 // remove from cart
 router.post("/removefromcart", async (req, res) => {
-  const { productId, patientId,shopId} = req.body;
+  const { productId, patientId, shopId } = req.body;
   console.log("server", productId, patientId);
   try {
     const query = `
@@ -223,7 +223,7 @@ router.post("/removefromcart", async (req, res) => {
     const params = {
       productId,
       patientId,
-      shopId
+      shopId,
     };
     await run_query(query, params);
     res.status(200).json({ message: "Product removed from cart successfully" });
@@ -237,7 +237,7 @@ router.post("/removefromcart", async (req, res) => {
 
 router.post("/placeorder", async (req, res) => {
   const { patientId, deliveryAgencyId, amount } = req.body;
-  console.log("data",patientId, deliveryAgencyId,amount);
+  console.log("data", patientId, deliveryAgencyId, amount);
 
   // Inserting into ORDERS
   try {
@@ -253,7 +253,7 @@ router.post("/placeorder", async (req, res) => {
     console.error("Error inserting into ORDERS:", error);
     return res.status(500).json({ error: "Failed to insert into ORDERS" });
   }
-  
+
   try {
     const productfromcart = await run_query(
       `SELECT PRODUCT_ID, SHOP_ID, CART_QUANTITY FROM CART WHERE PATIENT_ID=${patientId}`,
@@ -346,7 +346,8 @@ router.post("/acceptorder", async (req, res) => {
 
 // add product to supply
 router.post("/productstosupply", async (req, res) => {
-  const { productName, productPrice, productDescription, productImage } = req.body;
+  const { productName, productPrice, productDescription, productImage } =
+    req.body;
   console.log("Proudct name", productName);
   try {
     const cloudinaryResponse = await cloudinary.uploader.upload(productImage, {
@@ -362,18 +363,21 @@ router.post("/productstosupply", async (req, res) => {
       ],
     });
     console.log(cloudinaryResponse);
-    const query = await run_query(`INSERT INTO SUPPLY
+    const query = await run_query(
+      `INSERT INTO SUPPLY
       (PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION, PRODUCT_IMAGE)
-      VALUES(:productName, :productPrice, :productDescription, :productImage)`, {
-      productName,
-      productPrice,
-      productDescription,
-      productImage: cloudinaryResponse.secure_url,
-    })
+      VALUES(:productName, :productPrice, :productDescription, :productImage)`,
+      {
+        productName,
+        productPrice,
+        productDescription,
+        productImage: cloudinaryResponse.secure_url,
+      }
+    );
     res.status(200).json({
       message: "Product added successfully",
       url: cloudinaryResponse.secure_url,
-     });
+    });
   } catch (error) {
     console.error("Error adding product:", error);
     res.status(500).json({ error: "Failed to add product" });
