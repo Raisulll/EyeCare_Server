@@ -640,3 +640,8 @@ FROM
 
 
 alter table DELIVERY_AGENCY add DELIVERY_AGENCY_IMAGE varchar(255) default 'https://res.cloudinary.com/dnn7v3kkw/image/upload/v1727634683/EyeCare/uxoercbj1e9cxwf7taku.png' not null;
+
+
+alter table ORDERS add ORDER_TOTAL NUMBER DEFAULT 0 NOT NULL;
+
+ALTER TABLE ORDERED_PRODUCTS ADD ORDER_PRICE NUMBER DEFAULT 0 NOT NULL;

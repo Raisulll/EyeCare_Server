@@ -236,16 +236,17 @@ router.post("/removefromcart", async (req, res) => {
 // place order
 
 router.post("/placeorder", async (req, res) => {
-  const { patientId, deliveryAgencyId } = req.body;
-  console.log("data",patientId, deliveryAgencyId);
+  const { patientId, deliveryAgencyId, amount } = req.body;
+  console.log("data",patientId, deliveryAgencyId,amount);
 
   // Inserting into ORDERS
   try {
     let query = `INSERT INTO ORDERS( PATIENT_ID,
-    DELIVERY_AGENCY_ID) VALUES(:patientId, :deliveryAgencyId)`;
+    DELIVERY_AGENCY_ID,ORDER_TOTAL) VALUES(:patientId, :deliveryAgencyId, :amount)`;
     let params = {
       patientId,
       deliveryAgencyId,
+      amount,
     };
     await run_query(query, params);
   } catch (error) {
@@ -269,10 +270,11 @@ router.post("/placeorder", async (req, res) => {
         ORDER_ID,
         PRODUCT_ID,
         SHOP_ID,
-        ORDER_QUANTITY)
+        ORDER_QUANTITY,
+        ORDER_PRICE)
         VALUES(
         (SELECT MAX(ORDER_ID) FROM ORDERS),
-        :productId, :shopId, :orderQuantity)`;
+        :productId, :shopId, :orderQuantity, (SELECT PRODUCT_PRICE FROM SUPPLY WHERE PRODUCT_ID = :productId)*:orderQuantity)`;
         let params = {
           productId: product.PRODUCT_ID,
           shopId: product.SHOP_ID,
@@ -379,11 +381,11 @@ router.post("/productstosupply", async (req, res) => {
 });
 
 // delivery confirmed
-router.get("/done", async (req, res) => {
+router.post("/done", async (req, res) => {
   const orderId = req.body.orderId;
   console.log("server", orderId);
   try {
-    const query = `
+    let query = `
     UPDATE ORDERS
     SET ORDER_STATUS = 'Delivered'
     WHERE ORDER_ID=:orderId`;
@@ -391,6 +393,16 @@ router.get("/done", async (req, res) => {
       orderId,
     };
     await run_query(query, params);
+
+    // fixing transaction for delivery
+    query = `INSERT INTO TRANSACTION(TRANSACTION_DATE, TRANSACTION_AMOUNT, PATIENT_ID, DELIVERY_AGENCY_ID, PAYMENT_TO)
+    VALUES(SELECT ORDER_DATE FROM ORDERS WHERE ORDER_ID = :orderId, SELECT DELIVERY_CHARGE FROM DELIVERY_AGENCY WHERE DELIVERY_AGENCY_ID = (SELECT DELIVERY_AGENCY_ID FROM ORDERS WHERE ORDER_ID = :orderId), SELECT PATIENT_ID FROM ORDERS WHERE ORDER_ID = :orderId, SELECT DELIVERY_AGENCY_ID FROM ORDERS WHERE ORDER_ID = :orderId, SELECT DELIVERY_AGENCY_NAME FROM DELIVERY_AGENCY WHERE DELIVERY_AGENCY_ID = (SELECT DELIVERY_AGENCY_ID FROM ORDERS WHERE ORDER_ID = :orderId))`;
+    await run_query(query, { orderId });
+
+    //fix transaction for shop
+    // query = `INSERT INTO TRANSACTION(TRANSACTION_DATE, TRANSACTION_AMOUNT, PATIENT_ID, SHOP_ID, PAYMENT_TO)
+    //   VALUES(SELECT ORDER_DATE FROM ORDERS WHERE ORDER_ID = :orderId,
+    //   SELECT)`
     res.status(200).json({ message: "Order delivered successfully" });
   } catch (error) {
     console.error("Error delivering order:", error);

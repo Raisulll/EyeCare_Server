@@ -366,20 +366,22 @@ router.get("/ordersfordeliveryagency", async (req, res) => {
 // fetch all order
 router.get("/prevorders", async (req, res) => {
   const patientId = req.query.patientId;
+  console.log(patientId);
   try {
     const orders = await run_query(
-      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY
-      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU
+      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY, D.DELIVERY_AGENCY_NAME
+      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU, DELIVERY_AGENCY D
       WHERE
       O.ORDER_ID = OP.ORDER_ID AND
       OP.PRODUCT_ID = SU.PRODUCT_ID AND
       OP.SHOP_ID = S.SHOP_ID AND
-      O.PATIENT_ID = ${patientId}
-      O.ORDER_STATUS = 'Delivered'
+      O.PATIENT_ID = ${patientId} AND
+      O.ORDER_STATUS = 'Delivered' AND
+      O.DELIVERY_AGENCY_ID = D.DELIVERY_AGENCY_ID
       `,
       {}
     );
-    // console.log(orders);
+    console.log(orders);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -391,14 +393,15 @@ router.get("/upcomingorders", async (req, res) => {
   const patientId = req.query.patientId;
   try {
     const orders = await run_query(
-      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY
-      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU
+      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY,D.DELIVERY_AGENCY_NAME
+      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU,DELIVERY_AGENCY D
       WHERE
       O.ORDER_ID = OP.ORDER_ID AND
       OP.PRODUCT_ID = SU.PRODUCT_ID AND
       OP.SHOP_ID = S.SHOP_ID AND
-      O.PATIENT_ID = ${patientId}
-      O.ORDER_STATUS = 'Accepted'
+      O.PATIENT_ID = ${patientId} AND
+      O.ORDER_STATUS = 'Accepted' AND
+      O.DELIVERY_AGENCY_ID = D.DELIVERY_AGENCY_ID
       `,
       {}
     );
