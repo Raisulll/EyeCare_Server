@@ -154,7 +154,12 @@ router.get("/prescriptionforpatient", async (req, res) => {
   const appointmentId = req.query.appointmentId;
   try {
     const prescriptioninfo = await run_query(
-      `SELECT * FROM PRESCRIPTION WHERE APPOINTMENT_ID=${appointmentId}`,
+      `SELECT DOCTOR_NAME, APPOINTMENT_DATE, PATIENT_ISSUE, MEDICINE, GLASS, SURGERY
+      FROM PRESCRIPTION P, DOCTOR D, APPOINTMENT A
+      WHERE
+      P.APPOINTMENT_ID=A.APPOINTMENT_ID AND
+      A.DOCTOR_ID=D.DOCTOR_ID AND
+      P.APPOINTMENT_ID=${appointmentId}`,
       {}
     );
     // console.log(prescriptioninfo);

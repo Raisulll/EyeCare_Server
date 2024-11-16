@@ -651,3 +651,581 @@ SELECT
   *
 FROM
   HOSPITAL;
+
+  ----------------------------
+  -- Insert Dr. Jamsed Faridi Jami
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Dr. Jamsed Faridi Jami',
+  'drjamsed@gamil.com',
+  '01712345678', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Banani', -- Dhaka area
+  'Road 12', -- Example road number
+  'Male', -- Assuming gender
+  'LIC123456', -- Example license
+  '5 PM - 10 PM', -- Time slot
+  'Phaco, Squint & Child Eye Specialist',
+  '1234' -- Password updated to 1234
+);
+
+-- Insert Dr. Bipul Kumar Sarker
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Dr. Bipul Kumar Sarker',
+  'drjkumar@gamil.com',
+  '01712345679', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Gulshan', -- Dhaka area
+  'Road 5', -- Example road number
+  'Male', -- Assuming gender
+  'LIC123457', -- Example license
+  '6 PM - 9 PM', -- Time slot
+  'Eye Disease, Cataract, Glaucoma Specialist & Phaco Surgeon',
+  '1234' -- Password updated to 1234
+);
+
+-- Insert Dr. Muhammad Moniruzzaman
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Dr. Muhammad Moniruzzaman',
+  'drmuniruzzaman@gamil.com',
+  '01512345670', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Dhanmondi', -- Dhaka area
+  'Road 7', -- Example road number
+  'Male', -- Assuming gender
+  'LIC123458', -- Example license
+  '4 PM - 8 PM', -- Time slot
+  'Eye Specialist, Vitreo-Retina Specialist & Surgeon',
+  '1234' -- Password updated to 1234
+);
+
+-- Insert Dr. Siddiqur Rahman
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Dr. Siddiqur Rahman',
+  'drrahman@gamil.com',
+  '01312345671', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Uttara', -- Dhaka area
+  'Road 3', -- Example road number
+  'Male', -- Assuming gender
+  'LIC123459', -- Example license
+  '3 PM - 7 PM', -- Time slot
+  'Eye Specialist, Vitreo-Retina Specialist & Surgeon',
+  '1234' -- Password updated to 1234
+);
+
+-- Insert Dr. Masudul Hasan
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Dr. Masudul Hasan',
+  'drhasan@gamil.com',
+  '01712345672', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Mirpur', -- Dhaka area
+  'Road 8', -- Example road number
+  'Male', -- Assuming gender
+  'LIC123460', -- Example license
+  '5 PM - 9 PM', -- Time slot
+  'Eye Specialist, Vitreo-Retina Specialist & Surgeon',
+  '1234' -- Password updated to 1234
+);
+
+-- Insert Prof. Dr. Sarwar Alam
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Prof Dr. Sarwar Alam',
+  'drsarwar@gamil.com',
+  '01512345673', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Mohammadpur', -- Dhaka area
+  'Road 10', -- Example road number
+  'Male', -- Assuming gender
+  'LIC123461', -- Example license
+  '6 PM - 10 PM', -- Time slot
+  'Eye Specialist, Cornea & Cataract Surgeon',
+  '1234' -- Password updated to 1234
+);
+
+-- Insert Prof. Dr. Md Salehuddin
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Prof Dr Md Salehuddin',
+  'drsaleh@gamil.com',
+  '01312345674', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Bashundhara', -- Dhaka area
+  'Road 2', -- Example road number
+  'Male', -- Assuming gender
+  'LIC123462', -- Example license
+  '5 PM - 8 PM', -- Time slot
+  'Eye Specialist & Surgeon',
+  '1234' -- Password updated to 1234
+);
+
+-- Insert Dr. Shovana Alam
+INSERT INTO DOCTOR (
+  DOCTOR_NAME,
+  DOCTOR_MAIL,
+  DOCTOR_PHONE,
+  DOCTOR_DISTRICT,
+  DOCTOR_AREA,
+  DOCTOR_ROADNUMBER,
+  DOCTOR_GENDER,
+  DOCTOR_LICENSE,
+  DOCTOR_TIMESLOT,
+  DOCTOR_SPECIALITY,
+  DOCTOR_PASSWORD
+) VALUES (
+  'Dr. Shovana Alam',
+  'drshovana@gamil.com',
+  '01712345675', -- Generated phone number
+  'Dhaka', -- Dhaka city
+  'Tejgaon', -- Dhaka area
+  'Road 11', -- Example road number
+  'Female', -- Assuming gender
+  'LIC123463', -- Example license
+  '6 PM - 9 PM', -- Time slot
+  'Eye Specialist & Surgeon',
+  '1234' -- Password updated to 1234
+);
+
+
+--------------------------------------------------
+-- Insert Vision Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Vision Eye Hospital',
+  'visioneye@gamil.com',
+  '01742329720', -- Modified phone number
+  'Dhaka', -- District
+  'Green Road', -- Area
+  '229', -- Road number
+  'LIC-HOSP-001', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Al-Noor Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Al-Noor Eye Hospital',
+  'alnooreye@gamil.com',
+  '01852892044', -- Modified phone number
+  'Dhaka', -- District
+  'Mohammadpur', -- Area
+  'Noor Makka Complex', -- Road number
+  'LIC-HOSP-002', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Harun Eye Foundation Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Harun Eye Foundation Hospital',
+  'haruneyefoundation@gamil.com',
+  '01859613584', -- Modified phone number
+  'Dhaka', -- District
+  'Dhanmondi', -- Area
+  'House-12/A, Road-05', -- Road number
+  'LIC-HOSP-003', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Dristi Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Dristi Eye Hospital',
+  'dristieye@gamil.com',
+  '01553245353', -- Modified phone number
+  'Dhaka', -- District
+  'Banasree', -- Area
+  '48 Rd 3/A', -- Road number
+  'LIC-HOSP-004', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Dhaka Eye Care Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Dhaka Eye Care Hospital',
+  'dhakaeyecare@gamil.com',
+  '01554681955', -- Modified phone number
+  'Dhaka', -- District
+  'Rabindra Sarani', -- Area
+  '32', -- Road number
+  'LIC-HOSP-005', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Bangladesh Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Bangladesh Eye Hospital',
+  'bangladesheye@gamil.com',
+  '01857713988', -- Modified phone number
+  'Dhaka', -- District
+  'Block C, Road 4', -- Area
+  'House 138', -- Road number
+  'LIC-HOSP-006', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Lions Eye & General Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Lions Eye & General Hospital',
+  'lionseye@gamil.com',
+  '01854445837', -- Modified phone number
+  'Dhaka', -- District
+  'Begum Rokeya', -- Area
+  'Prof. Abdullah Sarani', -- Road number
+  'LIC-HOSP-007', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Mirpur Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Mirpur Eye Hospital',
+  'mirpureye@gamil.com',
+  '01855650389', -- Modified phone number
+  'Dhaka', -- District
+  'Begum Rokeya Sarani', -- Area
+  '1', -- Road number
+  'LIC-HOSP-008', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Dhaka Metro Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Dhaka Metro Eye Hospital',
+  'dhakametroeye@gamil.com',
+  '01770618312', -- Modified phone number
+  'Dhaka', -- District
+  'Pragati Avenue, Kuril Chowrasta', -- Area
+  'ka-51', -- Road number
+  'LIC-HOSP-009', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Ispahani Islamia Eye Institute and Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Ispahani Islamia Eye Institute and Hospital',
+  'ispahanieye@gamil.com',
+  '01558144818', -- Modified phone number
+  'Dhaka', -- District
+  'Sher-e-Bangla Nagar', -- Area
+  'Kamar Bari', -- Road number
+  'LIC-HOSP-010', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Dhaka New Lions Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Dhaka New Lions Eye Hospital',
+  'newlionseye@gamil.com',
+  '01754758462', -- Modified phone number
+  'Dhaka', -- District
+  'Bir Uttam Rafiqul Islam Ave', -- Area
+  '1234', -- Road number
+  'LIC-HOSP-011', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Hikmah Eye Hospital
+INSERT INTO HOSPITAL (
+  HOSPITAL_NAME,
+  HOSPITAL_MAIL,
+  HOSPITAL_PHONE,
+  HOSPITAL_DISTRICT,
+  HOSPITAL_AREA,
+  HOSPITAL_ROADNUMBER,
+  HOSPITAL_LICENSE,
+  HOSPITAL_PASSWORD
+) VALUES (
+  'Hikmah Eye Hospital',
+  'hikmaheye@gamil.com',
+  '01853719308', -- Modified phone number
+  'Dhaka', -- District
+  'Atish Deepankar Rd', -- Area
+  '287/15', -- Road number
+  'LIC-HOSP-012', -- Generated license
+  '1234' -- Password
+);
+
+
+--------------------------------------------------
+-- Insert Pharmacy 3
+INSERT INTO SHOP (
+  SHOP_NAME,
+  SHOP_MAIL,
+  SHOP_PHONE,
+  SHOP_DISTRICT,
+  SHOP_AREA,
+  SHOP_ROADNUMBER,
+  SHOP_LICENSE,
+  SHOP_PASSWORD
+) VALUES (
+  'Health Hub Pharmacy',
+  'healthhub@gamil.com',
+  '01912345678', -- Modified phone number
+  'Dhaka', -- District
+  'Banani', -- Area
+  'Road 11', -- Road number
+  'LIC-PHARM-006', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Optical Shop 3
+INSERT INTO SHOP (
+  SHOP_NAME,
+  SHOP_MAIL,
+  SHOP_PHONE,
+  SHOP_DISTRICT,
+  SHOP_AREA,
+  SHOP_ROADNUMBER,
+  SHOP_LICENSE,
+  SHOP_PASSWORD
+) VALUES (
+  'Elite Optical Center',
+  'eliteoptical@gamil.com',
+  '01623456789', -- Modified phone number
+  'Dhaka', -- District
+  'Shyamoli', -- Area
+  'Road 2', -- Road number
+  'LIC-OPTICAL-007', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Pharmacy 4
+INSERT INTO SHOP (
+  SHOP_NAME,
+  SHOP_MAIL,
+  SHOP_PHONE,
+  SHOP_DISTRICT,
+  SHOP_AREA,
+  SHOP_ROADNUMBER,
+  SHOP_LICENSE,
+  SHOP_PASSWORD
+) VALUES (
+  'Prime Care Pharmacy',
+  'primecare@gamil.com',
+  '01598765432', -- Modified phone number
+  'Dhaka', -- District
+  'Farmgate', -- Area
+  'Road 8', -- Road number
+  'LIC-PHARM-008', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Eye Care Shop 2
+INSERT INTO SHOP (
+  SHOP_NAME,
+  SHOP_MAIL,
+  SHOP_PHONE,
+  SHOP_DISTRICT,
+  SHOP_AREA,
+  SHOP_ROADNUMBER,
+  SHOP_LICENSE,
+  SHOP_PASSWORD
+) VALUES (
+  'Visionary Eye Care',
+  'visionaryeye@gamil.com',
+  '01987654321', -- Modified phone number
+  'Dhaka', -- District
+  'Khilgaon', -- Area
+  'Road 7', -- Road number
+  'LIC-EYE-009', -- Generated license
+  '1234' -- Password
+);
+
+-- Insert Optical Shop 4
+INSERT INTO SHOP (
+  SHOP_NAME,
+  SHOP_MAIL,
+  SHOP_PHONE,
+  SHOP_DISTRICT,
+  SHOP_AREA,
+  SHOP_ROADNUMBER,
+  SHOP_LICENSE,
+  SHOP_PASSWORD
+) VALUES (
+  'Optical Solutions',
+  'opticalsolutions@gamil.com',
+  '01834567890', -- Modified phone number
+  'Dhaka', -- District
+  'Tikatuli', -- Area
+  'Road 9', -- Road number
+  'LIC-OPTICAL-010', -- Generated license
+  '1234' -- Password
+);

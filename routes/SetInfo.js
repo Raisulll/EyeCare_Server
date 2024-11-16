@@ -444,4 +444,64 @@ router.post("/updatehospital", async (req, res) => {
   }
 });
 
+router.post("/surgery", async (req, res) => {
+  const {
+    surgeryname,
+    appointmentId,
+    surgeryDate,
+    surgeryTime,
+    surgerystatus,
+  } = req.body;
+
+  // Log the incoming parameters
+  console.log("Server received data:", {
+    surgeryname,
+    appointmentId,
+    surgeryDate,
+    surgeryTime,
+    surgerystatus,
+  });
+
+  try {
+    const query = `
+      INSERT INTO SURGERY (
+        SURGERY_ID,
+        SURGERY_NAME,
+        SURGERY_DATE,
+        SURGERY_TIME,
+        SURGERY_STATUS,
+        PATIENT_ID,
+        DOCTOR_ID,
+        HOSPITAL_ID
+      ) 
+      VALUES (
+        SURGERY_ID_SEQ.NEXTVAL,
+        :surgeryname,
+        TO_DATE(:surgeryDate, 'YYYY-MM-DD'),
+        :surgeryTime,
+        :surgerystatus,
+        (SELECT PATIENT_ID FROM APPOINTMENT WHERE APPOINTMENT_ID = :appointmentId),
+        (SELECT DOCTOR_ID FROM APPOINTMENT WHERE APPOINTMENT_ID = :appointmentId),
+        (SELECT HOSPITAL_ID FROM DOCTOR WHERE DOCTOR_ID = (SELECT DOCTOR_ID FROM APPOINTMENT WHERE APPOINTMENT_ID = :appointmentId))
+      )`;
+
+    const params = {
+      surgeryname, // Binds the surgery name
+      surgeryDate, // Binds the surgery date in 'YYYY-MM-DD' format
+      surgeryTime, // Binds the surgery time
+      surgerystatus, // Binds the surgery status (e.g., 'Scheduled')
+      appointmentId, // Binds the appointment ID
+    };
+
+    // Execute the query with the provided parameters
+    await run_query(query, params);
+
+    res.status(200).json({ message: "Surgery scheduled successfully" });
+  } catch (error) {
+    console.error("Error scheduling surgery:", error);
+    res.status(500).json({ error: "Failed to schedule surgery" });
+  }
+});
+
+
 export default router;
