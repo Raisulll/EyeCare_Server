@@ -1,7 +1,6 @@
-//fetch info for doctor profile
-
 import express from "express";
-import { run_query } from "../db/connectiondb.js";
+import supabase from "../db/SupabaseClient.js";
+import { Contact } from "lucide-react";
 
 const router = express.Router();
 
@@ -9,19 +8,32 @@ const router = express.Router();
 router.get("/doctordata", async (req, res) => {
   const doctorId = req.query.doctorId;
   try {
-    const doctorData = await run_query(
-      `SELECT DOCTOR_NAME, DOCTOR_MAIL, DOCTOR_PHONE, DOCTOR_DISTRICT, DOCTOR_AREA, DOCTOR_ROADNUMBER, DOCTOR_IMAGE, DOCTOR_SPECIALITY,DOCTOR_PAYMENT,
-      DOCTOR_TIMESLOT,HOSPITAL_NAME
-      FROM DOCTOR D, HOSPITAL H
-      WHERE
-      DOCTOR_ID=${doctorId} AND
-      D.HOSPITAL_ID = H.HOSPITAL_ID`,
-      {}
-    );
-    console.log(doctorData);
-    res.status(200).json(doctorData[0]);
+    const { data, error } = await supabase
+      .from("doctor")
+      .select(
+        `
+          doctor_name, 
+          doctor_mail, 
+          doctor_phone, 
+          doctor_district, 
+          doctor_area, 
+          doctor_roadnumber, 
+          doctor_image, 
+          doctor_speciality,
+          doctor_payment,
+          doctor_timeslot,
+          hospital(hospital_name)
+        `
+      )
+      .eq("doctor_id", doctorId);
+    if (error) {
+      console.error("Error fetching doctor data:", error);
+      return res.status(500).json({ message: "Failed to fetch doctor data" });
+    }
+    console.log(data);
+    res.status(200).json(data[0]);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching doctor data:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -29,16 +41,27 @@ router.get("/doctordata", async (req, res) => {
 //fetch patient data
 router.get("/patientdata", async (req, res) => {
   const patientId = req.query.patientid;
-  // console.log(patientId);
+  console.log("patientId", patientId);
+  if (!patientId) {
+    return res.status(400).json({ message: "patientid not provided" });
+  }
+  if (isNaN(patientId)) {
+    return res.status(400).json({ message: "patientid is not a number" });
+  }
+  const parsedPatientId = parseInt(patientId);
   try {
-    const patientData = await run_query(
-      `SELECT * FROM PATIENT WHERE PATIENT_ID=${patientId}`,
-      {}
-    );
-    // console.log(patientData);
-    res.status(200).json(patientData[0]);
+    const { data, error } = await supabase
+      .from("patient")
+      .select("*")
+      .eq("patient_id", parsedPatientId);
+    if (error) {
+      console.error("Error fetching patient data:", error);
+      return res.status(500).json({ message: "Failed to fetch patient data" });
+    }
+    console.log(data);
+    res.status(200).json(data[0]);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching patient data:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -46,44 +69,54 @@ router.get("/patientdata", async (req, res) => {
 // fetch appointment info
 router.get("/appointmentinfo", async (req, res) => {
   const appointmentId = req.query.appointmentId;
-  // console.log(appointmentId);
   try {
-    const appointmentInfo = await run_query(
-      `SELECT DOCTOR_NAME, PATIENT_NAME, APPOINTMENT_DATE, PATIENT_AGE
-      FROM APPOINTMENT A, DOCTOR D, PATIENT P
-      WHERE
-      A.DOCTOR_ID=D.DOCTOR_ID AND
-      A.PATIENT_ID = P.PATIENT_ID AND
-      A.APPOINTMENT_ID=${appointmentId}`,
-      {}
-    );
-    // console.log(appointmentInfo);
-    res.status(200).json(appointmentInfo[0]);
+    const { data, error } = await supabase
+      .from("appointment")
+      .select(
+        `
+            doctor(doctor_name), 
+            patient(patient_name), 
+            appointment_date, 
+            patient(patient_age)
+          `
+      )
+      .eq("appointment_id", appointmentId);
+    if (error) {
+      console.error("Error fetching appointment info:", error);
+      return res
+        .status(500)
+        .json({ message: "Failed to fetch appointment info" });
+    }
+    res.status(200).json(data[0]);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching appointment info:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 // fetch doctor transaction for a specific doctor
-
 router.get("/senddoctortransactions", async (req, res) => {
   const doctorId = req.query.doctorId;
-  // console.log(doctorId);
   try {
-    const transaction = await run_query(
-      `SELECT PATIENT_NAME, TRANSACTION_DATE, TRANSACTION_AMOUNT 
-    FROM TRANSACTION T, PATIENT P
-    WHERE
-    T.PATIENT_ID = P.PATIENT_ID AND
-    T.DOCTOR_ID=${doctorId}
-    `,
-      {}
-    );
-    // console.log("All okay", transaction);
-    res.status(200).json(transaction);
+    const { data, error } = await supabase
+      .from("transaction")
+      .select(
+        `
+                  patient(patient_name), 
+                  transaction_date, 
+                  transaction_amount
+              `
+      )
+      .eq("doctor_id", doctorId);
+    if (error) {
+      console.error("Error fetching doctor transactions:", error);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch doctor transactions" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching transactions:", error);
+    console.error("Error fetching doctor transactions:", error);
     res.status(500).json({ error: "Failed to fetch transactions" });
   }
 });
@@ -91,20 +124,27 @@ router.get("/senddoctortransactions", async (req, res) => {
 // fetch patient transaction for a specific patient
 router.get("/sendpatienttransactions", async (req, res) => {
   const patientId = req.query.patientId;
-  // console.log(patientId);
   try {
-    const transaction = await run_query(
-      `
-      SELECT PAYMENT_TO, TRANSACTION_FOR, TRANSACTION_DATE, TRANSACTION_AMOUNT
-      FROM TRANSACTION
-      WHERE PATIENT_ID=${patientId}
-      `,
-      {}
-    );
-    // console.log("All okay", transaction);
-    res.status(200).json(transaction);
+    const { data, error } = await supabase
+      .from("transaction")
+      .select(
+        `
+            payment_to, 
+            transaction_for, 
+            transaction_date, 
+            transaction_amount
+          `
+      )
+      .eq("patient_id", patientId);
+    if (error) {
+      console.error("Error fetching patient transactions:", error);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch patient transactions" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching transactions:", error);
+    console.error("Error fetching patient transactions:", error);
     res.status(500).json({ error: "Failed to fetch transactions" });
   }
 });
@@ -112,16 +152,18 @@ router.get("/sendpatienttransactions", async (req, res) => {
 // fetch hospital info
 router.get("/hospitaldata", async (req, res) => {
   const hospitalId = req.query.hospitalid;
-  // console.log("Hospital Id",hospitalId);
   try {
-    const hospitalData = await run_query(
-      `SELECT * FROM HOSPITAL WHERE HOSPITAL_ID=${hospitalId}`,
-      {}
-    );
-    // console.log(hospitalData);
-    res.status(200).json(hospitalData[0]);
+    const { data, error } = await supabase
+      .from("hospital")
+      .select("*")
+      .eq("hospital_id", hospitalId);
+    if (error) {
+      console.error("Error fetching hospital data:", error);
+      return res.status(500).json({ message: "Failed to fetch hospital data" });
+    }
+    res.status(200).json(data[0]);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching hospital data:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -129,22 +171,27 @@ router.get("/hospitaldata", async (req, res) => {
 //fetch schedule for a specific hospital
 router.get("/hospitalSchedule", async (req, res) => {
   const hospitalId = req.query.hospitalid;
-  // console.log(hospitalId);
   try {
-    const schedule = await run_query(
-      `SELECT DOCTOR_NAME, PATIENT_NAME, APPOINTMENT_DATE, APPOINTMENT_TIME
-      FROM APPOINTMENT A, DOCTOR D, PATIENT P, HOSPITAL H
-      WHERE
-      A.DOCTOR_ID=D.DOCTOR_ID AND
-      A.PATIENT_ID = P.PATIENT_ID AND
-      A.HOSPITAL_ID = H.HOSPITAL_ID AND
-      H.HOSPITAL_ID=${hospitalId}`,
-      {}
-    );
-    // console.log("All okay", schedule);
-    res.status(200).json(schedule);
+    const { data, error } = await supabase
+      .from("appointment")
+      .select(
+        `
+            doctor(doctor_name), 
+            patient(patient_name), 
+            appointment_date, 
+            appointment_time
+            `
+      )
+      .eq("hospital_id", hospitalId);
+    if (error) {
+      console.error("Error fetching hospital schedule:", error);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch hospital schedule" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching schedule:", error);
+    console.error("Error fetching hospital schedule:", error);
     res.status(500).json({ error: "Failed to fetch schedule" });
   }
 });
@@ -153,17 +200,24 @@ router.get("/hospitalSchedule", async (req, res) => {
 router.get("/prescriptionforpatient", async (req, res) => {
   const appointmentId = req.query.appointmentId;
   try {
-    const prescriptioninfo = await run_query(
-      `SELECT DOCTOR_NAME, APPOINTMENT_DATE, PATIENT_ISSUE, MEDICINE, GLASS, SURGERY
-      FROM PRESCRIPTION P, DOCTOR D, APPOINTMENT A
-      WHERE
-      P.APPOINTMENT_ID=A.APPOINTMENT_ID AND
-      A.DOCTOR_ID=D.DOCTOR_ID AND
-      P.APPOINTMENT_ID=${appointmentId}`,
-      {}
-    );
-    // console.log(prescriptioninfo);
-    res.status(200).json(prescriptioninfo[0]);
+    const { data, error } = await supabase
+      .from("prescription")
+      .select(
+        `
+            doctor(doctor_name), 
+            appointment_date, 
+            patient_issue, 
+            medicine, 
+            glass, 
+            surgery
+            `
+      )
+      .eq("appointment_id", appointmentId);
+    if (error) {
+      console.error("Error fetching prescription:", error);
+      return res.status(500).json({ error: "Failed to fetch prescription" });
+    }
+    res.status(200).json(data[0]);
   } catch (error) {
     console.error("Error fetching prescription:", error);
     res.status(500).json({ error: "Failed to fetch prescription" });
@@ -173,16 +227,18 @@ router.get("/prescriptionforpatient", async (req, res) => {
 //fetch shop data
 router.get("/shopdata", async (req, res) => {
   const shopId = req.query.shopid;
-  // console.log(shopId);
   try {
-    const shopData = await run_query(
-      `SELECT * FROM SHOP WHERE SHOP_ID=${shopId}`,
-      {}
-    );
-    // console.log(shopData);
-    res.status(200).json(shopData[0]);
+    const { data, error } = await supabase
+      .from("shop")
+      .select("*")
+      .eq("shop_id", shopId);
+    if (error) {
+      console.error("Error fetching shop data:", error);
+      return res.status(500).json({ message: "Failed to fetch shop data" });
+    }
+    res.status(200).json(data[0]);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching shop data:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -190,34 +246,43 @@ router.get("/shopdata", async (req, res) => {
 // fetch all products
 router.get("/allproducts", async (req, res) => {
   try {
-    const allProducts = await run_query(`SELECT * FROM SUPPLY`, {});
-    // console.log(allProducts);
-    res.status(200).json(allProducts);
+    const { data, error } = await supabase.from("supply").select("*");
+    if (error) {
+      console.error("Error fetching all products:", error);
+      return res.status(500).json({ message: "Failed to fetch all products" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching all products:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 // fetch products
 router.get("/products", async (req, res) => {
-  console.log("eikhane asche");
-  // fetch all products from INVENTORY
-  const userId = req.query.userId;
   try {
-    const products = await run_query(
-      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, PRODUCT_IMAGE,QUANTITY, SH.SHOP_ID, SH.SHOP_NAME
-      FROM SUPPLY S, INVENTORY I, SHOP SH
-      WHERE
-      I.SHOP_ID = SH.SHOP_ID AND
-      S.PRODUCT_ID = I.PRODUCT_ID AND
-      QUANTITY > 0`,
-      {}
-    );
-    // console.log(products);1
-    res.status(200).json(products);
+    const { data, error } = await supabase
+      .from("supply")
+      .select(
+        `
+                inventory(product_id), 
+                product_name, 
+                product_description, 
+                product_price, 
+                product_image,
+                inventory(quantity), 
+                shop(shop_id), 
+                shop(shop_name)
+            `
+      )
+      .gt("inventory.quantity", 0);
+    if (error) {
+      console.error("Error fetching products:", error);
+      return res.status(500).json({ message: "Failed to fetch products" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching products:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -225,22 +290,30 @@ router.get("/products", async (req, res) => {
 //search products
 router.get("/productsearch", async (req, res) => {
   const search = req.query.search;
-  console.log(search);
   try {
-    const products = await run_query(
-      `SELECT I.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, PRODUCT_IMAGE,QUANTITY, SH.SHOP_ID, SH.SHOP_NAME
-      FROM SUPPLY S, INVENTORY I, SHOP SH
-      WHERE
-      I.SHOP_ID = SH.SHOP_ID AND
-      S.PRODUCT_ID = I.PRODUCT_ID AND
-      QUANTITY > 0 AND
-      LOWER(PRODUCT_NAME) LIKE '%${search}%'`,
-      {}
-    );
-    console.log(products);
-    res.status(200).json(products);
+    const { data, error } = await supabase
+      .from("supply")
+      .select(
+        `
+                inventory(product_id), 
+                product_name, 
+                product_description, 
+                product_price, 
+                product_image,
+                inventory(quantity), 
+                shop(shop_id), 
+                shop(shop_name)
+            `
+      )
+      .ilike("product_name", `%${search}%`)
+      .gt("inventory.quantity", 0);
+    if (error) {
+      console.error("Error searching products:", error);
+      return res.status(500).json({ message: "Failed to search products" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    // console.log(error);
+    console.error("Error searching products:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -248,23 +321,29 @@ router.get("/productsearch", async (req, res) => {
 // fetch cart items
 router.get("/cartitems", async (req, res) => {
   const patientId = req.query.patientId;
-  console.log(patientId);
   try {
-    const cartItems = await run_query(
-      `SELECT PRODUCT_NAME, PRODUCT_PRICE,C.PRODUCT_ID, QUANTITY, CART_QUANTITY,PRODUCT_IMAGE, SHOP_NAME, SH.SHOP_ID
-      FROM CART C, SUPPLY S, INVENTORY I, SHOP SH
-      WHERE
-      C.PRODUCT_ID = S.PRODUCT_ID AND
-      S.PRODUCT_ID = I.PRODUCT_ID AND
-      C.SHOP_ID = I.SHOP_ID AND
-      C.SHOP_ID = SH.SHOP_ID AND
-      C.PATIENT_ID=${patientId}`,
-      {}
-    );
-    // console.log(cartItems);
-    res.status(200).json(cartItems);
+    const { data, error } = await supabase
+      .from("cart")
+      .select(
+        `
+                supply(product_name), 
+                supply(product_price),
+                product_id, 
+                quantity, 
+                cart_quantity,
+                supply(product_image), 
+                shop(shop_name), 
+                shop(shop_id)
+            `
+      )
+      .eq("patient_id", patientId);
+    if (error) {
+      console.error("Error fetching cart items:", error);
+      return res.status(500).json({ message: "Failed to fetch cart items" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching cart items:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -272,10 +351,16 @@ router.get("/cartitems", async (req, res) => {
 // fetch all delivery agency informatio
 router.get("/deliveryagency", async (req, res) => {
   try {
-    const deliveryagency = `SELECT DELIVERY_AGENCY_ID, DELIVERY_AGENCY_NAME, DELIVERY_AGENCY_STATUS,DELIVERY_CHARGE FROM DELIVERY_AGENCY`;
-    const deliveryagencyInfo = await run_query(deliveryagency, {});
-    // console.log(deliveryagencyInfo);
-    res.status(200).json(deliveryagencyInfo);
+    const { data, error } = await supabase
+      .from("delivery_agency")
+      .select(
+        "delivery_agency_id, delivery_agency_name, delivery_agency_status,delivery_charge"
+      );
+    if (error) {
+      console.error("Error fetching delivery agency:", error);
+      return res.status(500).json({ error: "Failed to fetch delivery agency" });
+    }
+    res.status(200).json(data);
   } catch (error) {
     console.error("Error fetching delivery agency:", error);
     res.status(500).json({ error: "Failed to fetch delivery agency" });
@@ -286,33 +371,27 @@ router.get("/deliveryagency", async (req, res) => {
 router.get("/ordersforshop", async (req, res) => {
   const shopId = req.query.shopId;
   try {
-    const orders = await run_query(
-      `SELECT
-        O.ORDER_ID,
-        PRODUCT_NAME,
-        ORDER_QUANTITY,
-        PATIENT_NAME,
-        ORDER_DATE,
-        DELIVERY_AGENCY_NAME
-      FROM
-        ORDERS           O,
-        ORDERED_PRODUCTS OP,
-        SUPPLY           S,
-        PATIENT          P,
-        DELIVERY_AGENCY  D
-      WHERE
-        O.ORDER_ID = OP.ORDER_ID
-        AND OP.PRODUCT_ID = S.PRODUCT_ID
-        AND O.PATIENT_ID = P.PATIENT_ID
-        AND SHOP_ID = ${shopId}
-        AND ORDER_STATUS = 'Pending'
-        AND O.DELIVERY_AGENCY_ID=D.DELIVERY_AGENCY_ID`,
-      {}
-    );
-    console.log(orders);
-    res.status(200).json(orders);
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+        order_id,
+            ordered_products(product_name),
+            order_quantity,
+            patient(patient_name),
+            order_date,
+        delivery_agency(delivery_agency_name)
+      `
+      )
+      .eq("shop_id", shopId)
+      .eq("order_status", "Pending");
+    if (error) {
+      console.error("Error fetching orders for shop:", error);
+      return res.status(500).json({ error: "Failed to fetch orders for shop" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching orders for shop:", error);
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 });
@@ -321,12 +400,15 @@ router.get("/ordersforshop", async (req, res) => {
 router.get("/deliverydata", async (req, res) => {
   const deliveryId = req.query.deliveryId;
   try {
-    const deliverydata = await run_query(
-      `SELECT * FROM  DELIVERY_AGENCY WHERE DELIVERY_AGENCY_ID=${deliveryId}`,
-      {}
-    );
-    console.log(deliverydata);
-    res.status(200).json(deliverydata);
+    const { data, error } = await supabase
+      .from("delivery_agency")
+      .select("*")
+      .eq("delivery_agency_id", deliveryId);
+    if (error) {
+      console.error("Error fetching delivery data:", error);
+      return res.status(500).json({ error: "Failed to fetch delivery data" });
+    }
+    res.status(200).json(data);
   } catch (error) {
     console.error("Error fetching delivery data:", error);
     res.status(500).json({ error: "Failed to fetch delivery data" });
@@ -337,28 +419,39 @@ router.get("/deliverydata", async (req, res) => {
 router.get("/ordersfordeliveryagency", async (req, res) => {
   const deliveryId = req.query.deliveryId;
   try {
-    const orders = await run_query(
-      `SELECT O.ORDER_ID,ORDER_STATUS, SHOP_NAME,PATIENT_NAME, ORDER_DATE, PATIENT_ROADNUMBER,PATIENT_AREA, PATIENT_DISTRICT, PATIENT_PHONE
-      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, PATIENT P
-      WHERE 
-      O.ORDER_ID = OP.ORDER_ID AND
-      OP.SHOP_ID = S.SHOP_ID AND
-      O.DELIVERY_AGENCY_ID = ${deliveryId} AND
-      O.PATIENT_ID = P.PATIENT_ID AND
-      O.ORDER_STATUS = 'Accepted'
-      `,
-      {}
-    );
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+                    order_id,
+                    order_status,
+                    shop(shop_name),
+                    patient(patient_name),
+                    order_date,
+                    patient(patient_roadnumber),
+                    patient(patient_area),
+                    patient(patient_district),
+                    patient(patient_phone)
+                `
+      )
+      .eq("delivery_agency_id", deliveryId)
+      .eq("order_status", "Accepted");
+    if (error) {
+      console.error("Error fetching orders for delivery agency:", error);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch orders for delivery agency" });
+    }
 
     const uniqueOrders = [];
     const orderIds = new Set();
-    orders.forEach((order) => {
-      if (!orderIds.has(order.ORDER_ID)) {
+    data.forEach((order) => {
+      if (!orderIds.has(order.order_id)) {
         uniqueOrders.push(order);
-        orderIds.add(order.ORDER_ID);
+        orderIds.add(order.order_id);
       }
     });
-    console.log(uniqueOrders);
+
     res.status(200).json(uniqueOrders);
   } catch (error) {
     console.error("Error fetching orders for delivery agency:", error);
@@ -371,79 +464,91 @@ router.get("/ordersfordeliveryagency", async (req, res) => {
 // fetch all order
 router.get("/prevorders", async (req, res) => {
   const patientId = req.query.patientId;
-  console.log(patientId);
   try {
-    const orders = await run_query(
-      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY, D.DELIVERY_AGENCY_NAME
-      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU, DELIVERY_AGENCY D
-      WHERE
-      O.ORDER_ID = OP.ORDER_ID AND
-      OP.PRODUCT_ID = SU.PRODUCT_ID AND
-      OP.SHOP_ID = S.SHOP_ID AND
-      O.PATIENT_ID = ${patientId} AND
-      O.ORDER_STATUS = 'Delivered' AND
-      O.DELIVERY_AGENCY_ID = D.DELIVERY_AGENCY_ID
-      `,
-      {}
-    );
-    console.log(orders);
-    res.status(200).json(orders);
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+            order_id, 
+            order_date, 
+            shop(shop_name), 
+            ordered_products(product_name), 
+            order_quantity,
+              delivery_agency(delivery_agency_name)
+          `
+      )
+      .eq("patient_id", patientId)
+      .eq("order_status", "Delivered");
+    if (error) {
+      console.error("Error fetching previous orders:", error);
+      return res.status(500).json({ error: "Failed to fetch previous orders" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching previous orders:", error);
     res.status(500).json({ error: "Failed to fetch orders" });
   }
-})
+});
 
 router.get("/upcomingorders", async (req, res) => {
   const patientId = req.query.patientId;
   try {
-    const orders = await run_query(
-      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY,D.DELIVERY_AGENCY_NAME
-      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU,DELIVERY_AGENCY D
-      WHERE
-      O.ORDER_ID = OP.ORDER_ID AND
-      OP.PRODUCT_ID = SU.PRODUCT_ID AND
-      OP.SHOP_ID = S.SHOP_ID AND
-      O.PATIENT_ID = ${patientId} AND
-      O.ORDER_STATUS = 'Accepted' AND
-      O.DELIVERY_AGENCY_ID = D.DELIVERY_AGENCY_ID
-      `,
-      {}
-    );
-    // console.log(orders);
-    res.status(200).json(orders);
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+              order_id, 
+              order_date, 
+              shop(shop_name), 
+              ordered_products(product_name), 
+              order_quantity,
+              delivery_agency(delivery_agency_name)
+          `
+      )
+      .eq("patient_id", patientId)
+      .eq("order_status", "Accepted");
+    if (error) {
+      console.error("Error fetching upcoming orders:", error);
+      return res.status(500).json({ error: "Failed to fetch upcoming orders" });
+    }
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching upcoming orders:", error);
     res.status(500).json({ error: "Failed to fetch orders" });
-  };
-} )
-
-
-// fetch all orders for a specific delivery agency
-
-router.get("/ordersfordelivery", async (req, res) => {
-  const deliveryId = req.query.deliveryId;
-  try {
-    const orders = await run_query(
-      `SELECT O.ORDER_ID, ORDER_DATE, SHOP_NAME, PRODUCT_NAME, ORDER_QUANTITY,PATIENT_NAME, PATIENT_PHONE, PATIENT_ADDRESS
-      FROM ORDERS O, ORDERED_PRODUCTS OP, SHOP S, SUPPLY SU, PATIENT P
-      WHERE
-      O.ORDER_ID = OP.ORDER_ID AND
-      OP.PRODUCT_ID = SU.PRODUCT_ID AND
-      OP.SHOP_ID = S.SHOP_ID AND
-      O.DELIVERY_AGENCY_ID = ${deliveryId} AND
-      O.ORDER_STATUS = 'Accepted'
-      AND O.PATIENT_ID = P.PATIENT_ID
-      `,
-      {}
-    );
-    console.log(orders);
-    res.status(200).json(orders);
-  } catch (error) {
-    console.error("Error fetching orders for delivery agency:", error);
-    res.status(500).json({ error: "Failed to fetch orders for delivery agency" });
   }
 });
 
+// fetch all orders for a specific delivery agency
+router.get("/ordersfordelivery", async (req, res) => {
+  const deliveryId = req.query.deliveryId;
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+                    order_id, 
+                    order_date, 
+                    shop(shop_name), 
+                    ordered_products(product_name), 
+                    order_quantity,
+                    patient(patient_name), 
+                    patient(patient_phone), 
+                    patient(patient_address)
+            `
+      )
+      .eq("delivery_agency_id", deliveryId)
+      .eq("order_status", "Accepted");
+    if (error) {
+      console.error("Error fetching orders for delivery:", error);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch orders for delivery" });
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching orders for delivery:", error);
+    res.status(500).json({ error: "Failed to fetch orders for delivery" });
+  }
+});
 
 export default router;

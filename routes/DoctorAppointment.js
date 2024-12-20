@@ -1,24 +1,44 @@
 import express from "express";
-import { run_query, runCursorQuery } from "../db/connectiondb.js";
+import supabase from "../db/SupabaseClient.js";
 
 const router = express.Router();
 
 // Fetch appointments for a specific doctor
 router.get("/senddoctorappointments", async (req, res) => {
-  const { doctorId } = req.query; // Get doctorId from query parameters
-  // console.log(doctorId);
+  const { doctorId } = req.query;
+
   try {
-    const appointments = await runCursorQuery(
-      `BEGIN GET_DOCTOR_APPOINTMENTS(:doctorId, :cursor); END;`,
-      { doctorId }
-    );
+    // Query appointments for the given doctorId using Supabase
+    const { data: appointments, error } = await supabase
+      .from("appointment")
+      .select(
+        `
+        appointment_id,
+        appointment_date,
+        appointment_time,
+        appointment_status,
+        patients!inner(patient_name) 
+      `
+      )
+      .eq("doctor_id", doctorId);
+
+    if (error) {
+      console.error("Error fetching appointments:", error);
+      return res.status(500).json({ error: "Failed to fetch appointments" });
+    }
+
+    if (!appointments || appointments.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No appointments found for the given doctor." });
+    }
 
     const formattedAppointments = appointments.map((appointment) => ({
-      APPOINTMENT_ID: appointment.APPOINTMENT_ID,
-      APPOINTMENT_DATE: appointment.APPOINTMENT_DATE,
-      APPOINTMENT_TIME: appointment.APPOINTMENT_TIME,
-      APPOINTMENT_STATUS: appointment.APPOINTMENT_STATUS,
-      PATIENT_NAME: appointment.PATIENT_NAME,
+      appointment_id: appointment.appointment_id,
+      appointment_date: appointment.appointment_date,
+      appointment_time: appointment.appointment_time,
+      appointment_status: appointment.appointment_status,
+      patient_name: appointment.patients.patient_name,
     }));
     console.log(formattedAppointments);
 
@@ -26,19 +46,6 @@ router.get("/senddoctorappointments", async (req, res) => {
   } catch (error) {
     console.error("Error fetching appointments:", error);
     res.status(500).json({ error: "Failed to fetch appointments" });
-    if (error.errorNum === 20001) {
-      res.status(404).json({ error: "No pending appointments found for the given doctor." });
-    }
-    else if(error.errorNum === 20002) {
-      res.status(405).json({ error: "No appointments found for the given doctor." });
-    }
-    else if(error.errorNum === 20003) {
-      res
-        .status(406)
-        .json({
-          error: "An unexpected error occurred. Please try again later.",
-        });
-    }
   }
 });
 

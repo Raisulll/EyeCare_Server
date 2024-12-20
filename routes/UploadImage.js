@@ -1,33 +1,37 @@
 import express from "express";
-import { run_query } from "../db/connectiondb.js";
-import cloudinary from "../cloudenary.js"; 
+import supabase from "../db/SupabaseClient.js";
+import cloudinary from "../cloudenary.js";
+
 const router = express.Router();
 
 // set userProfile image
 router.post("/patientProfile", async (req, res) => {
   const { imageBase64, patientId } = req.body;
-  console.log("server", patientId);
   try {
     const cloudinaryResponse = await cloudinary.uploader.upload(imageBase64, {
       folder: "EyeCare",
       unique_filename: true,
       timeout: 60000,
-      transformation: [{
-        width: 800, height: 600,
-        crop: "limit"
-      }]
+      transformation: [
+        {
+          width: 800,
+          height: 600,
+          crop: "limit",
+        },
+      ],
     });
-    console.log(cloudinaryResponse);
-    const query = await run_query(`UPDATE PATIENT SET PATIENT_IMAGE = :image WHERE PATIENT_ID = :id`, {
-      image: cloudinaryResponse.secure_url,
-      id: patientId,
+    const { error } = await supabase
+      .from("patient")
+      .update({ patient_image: cloudinaryResponse.secure_url })
+      .eq("patient_id", patientId);
+    if (error) {
+      console.error("Error uploading image:", error);
+      return res.status(500).json({ message: "Error uploading image." });
+    }
+    res.status(200).json({
+      message: "Image uploaded successfully",
+      url: cloudinaryResponse.secure_url,
     });
-    res
-      .status(200)
-      .json({
-        message: "Image uploaded successfully",
-        url: cloudinaryResponse.secure_url,
-      });
   } catch (error) {
     console.error("Error uploading image:", error);
     res.status(500).json({ message: "Error uploading image." });
@@ -37,7 +41,6 @@ router.post("/patientProfile", async (req, res) => {
 // set doctorProfile image
 router.post("/doctorProfile", async (req, res) => {
   const { imageBase64, doctorId } = req.body;
-  console.log("server", doctorId);
   try {
     const cloudinaryResponse = await cloudinary.uploader.upload(imageBase64, {
       folder: "EyeCare",
@@ -51,14 +54,14 @@ router.post("/doctorProfile", async (req, res) => {
         },
       ],
     });
-    console.log(cloudinaryResponse);
-    const query = await run_query(
-      `UPDATE DOCTOR SET DOCTOR_IMAGE = :image WHERE DOCTOR_ID = :id`,
-      {
-        image: cloudinaryResponse.secure_url,
-        id: doctorId,
-      }
-    );
+    const { error } = await supabase
+      .from("doctor")
+      .update({ doctor_image: cloudinaryResponse.secure_url })
+      .eq("doctor_id", doctorId);
+    if (error) {
+      console.error("Error uploading image:", error);
+      return res.status(500).json({ message: "Error uploading image." });
+    }
     res.status(200).json({
       message: "Image uploaded successfully",
       url: cloudinaryResponse.secure_url,
@@ -67,12 +70,11 @@ router.post("/doctorProfile", async (req, res) => {
     console.error("Error uploading image:", error);
     res.status(500).json({ message: "Error uploading image." });
   }
-})
+});
 
 // set shop profile image
 router.post("/shopprofile", async (req, res) => {
   const { imageBase64, shopId } = req.body;
-  console.log("server", shopId);
   try {
     const cloudinaryResponse = await cloudinary.uploader.upload(imageBase64, {
       folder: "EyeCare",
@@ -86,14 +88,14 @@ router.post("/shopprofile", async (req, res) => {
         },
       ],
     });
-    console.log(cloudinaryResponse);
-    const query = await run_query(
-      `UPDATE SHOP SET SHOP_IMAGE = :image WHERE SHOP_ID = :id`,
-      {
-        image: cloudinaryResponse.secure_url,
-        id: shopId,
-      }
-    );
+    const { error } = await supabase
+      .from("shop")
+      .update({ shop_image: cloudinaryResponse.secure_url })
+      .eq("shop_id", shopId);
+    if (error) {
+      console.error("Error uploading image:", error);
+      return res.status(500).json({ message: "Error uploading image." });
+    }
     res.status(200).json({
       message: "Image uploaded successfully",
       url: cloudinaryResponse.secure_url,
@@ -102,12 +104,10 @@ router.post("/shopprofile", async (req, res) => {
     console.error("Error uploading image:", error);
     res.status(500).json({ message: "Error uploading image." });
   }
-})
-
+});
 
 router.post("/deliveryprofile", async (req, res) => {
   const { imageBase64, deliveryId } = req.body;
-  console.log("server", deliveryId);
   try {
     const cloudinaryResponse = await cloudinary.uploader.upload(imageBase64, {
       folder: "EyeCare",
@@ -121,14 +121,14 @@ router.post("/deliveryprofile", async (req, res) => {
         },
       ],
     });
-    console.log(cloudinaryResponse);
-    const query = await run_query(
-      `UPDATE DELIVERY_AGENCY SET DELIVERY_IMAGE = :image WHERE DELIVERY_AGENCY_ID = :id`,
-      {
-        image: cloudinaryResponse.secure_url,
-        id: deliveryId,
-      }
-    );
+    const { error } = await supabase
+      .from("delivery_agency")
+      .update({ delivery_image: cloudinaryResponse.secure_url })
+      .eq("delivery_agency_id", deliveryId);
+    if (error) {
+      console.error("Error uploading image:", error);
+      return res.status(500).json({ message: "Error uploading image." });
+    }
     res.status(200).json({
       message: "Image uploaded successfully",
       url: cloudinaryResponse.secure_url,
@@ -141,7 +141,6 @@ router.post("/deliveryprofile", async (req, res) => {
 
 router.post("/hospitalprofile", async (req, res) => {
   const { imageBase64, hospitalId } = req.body;
-  console.log("server", hospitalId);
   try {
     const cloudinaryResponse = await cloudinary.uploader.upload(imageBase64, {
       folder: "EyeCare",
@@ -155,14 +154,14 @@ router.post("/hospitalprofile", async (req, res) => {
         },
       ],
     });
-    console.log(cloudinaryResponse);
-    const query = await run_query(
-      `UPDATE HOSPITAL SET HOSPITAL_IMAGE = :image WHERE HOSPITAL_ID = :id`,
-      {
-        image: cloudinaryResponse.secure_url,
-        id: hospitalId,
-      }
-    );
+    const { error } = await supabase
+      .from("hospital")
+      .update({ hospital_image: cloudinaryResponse.secure_url })
+      .eq("hospital_id", hospitalId);
+    if (error) {
+      console.error("Error uploading image:", error);
+      return res.status(500).json({ message: "Error uploading image." });
+    }
     res.status(200).json({
       message: "Image uploaded successfully",
       url: cloudinaryResponse.secure_url,
@@ -171,6 +170,6 @@ router.post("/hospitalprofile", async (req, res) => {
     console.error("Error uploading image:", error);
     res.status(500).json({ message: "Error uploading image." });
   }
-})
+});
 
 export default router;

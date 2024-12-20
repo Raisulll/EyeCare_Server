@@ -1,16 +1,17 @@
 import express from "express";
-import { run_query } from "../db/connectiondb.js";
+import supabase from "../db/SupabaseClient.js";
 
 const router = express.Router();
 
 // Route to fetch all doctors
 router.get("/doctors", async (req, res) => {
   try {
-    const query =
-      "SELECT * FROM DOCTOR_VIEW";
-    const doctors = await run_query(query, []);
-    // console.log(doctors);
-    res.json(doctors);
+    const { data, error } = await supabase.from("doctor").select("*");
+    if (error) {
+      console.error("Error fetching doctors:", error);
+      return res.status(500).json({ error: "Failed to fetch doctors" });
+    }
+    res.json(data);
   } catch (error) {
     console.error("Error fetching doctors:", error);
     res.status(500).json({ error: "Failed to fetch doctors" });
@@ -22,34 +23,41 @@ router.get("/doctorsearch", async (req, res) => {
   const search = req.query.search;
   console.log(search);
   try {
-    const doctors = await run_query(
-      `SELECT *
-      FROM DOCTOR_VIEW
-      WHERE
-      LOWER(DOCTOR_NAME) LIKE '%${search}%'`,
-      {}
-    );
-    console.log(doctors);
-    res.status(200).json(doctors);
-  }
-  catch (error) {
+    const { data, error } = await supabase
+      .from("doctor")
+      .select("*")
+      .ilike("doctor_name", `%${search}%`);
+    if (error) {
+      console.error("Error fetching doctors:", error);
+      return res.status(500).json({ error: "Failed to fetch doctors" });
+    }
+    console.log(data);
+    res.status(200).json(data);
+  } catch (error) {
     console.error("Error fetching doctors:", error);
     res.status(500).json({ error: "Failed to fetch doctors" });
   }
-})
+});
 
 // Route to fetch time slots for a specific doctor
 router.get("/doctorstime", async (req, res) => {
   const doctorId = parseInt(req.query.doctorid);
-  // console.log(doctorId);
   if (isNaN(doctorId)) {
     return res.status(400).json({ error: "Invalid doctor ID" });
   }
   try {
-    const query = `SELECT DOCTOR_TIMESLOT FROM DOCTOR WHERE DOCTOR_ID = :doctorId`;
-    const times = await run_query(query, { doctorId });
-    // console.log(times);
-    res.json(times);
+    const { data, error } = await supabase
+      .from("doctor")
+      .select("doctor_timeslot")
+      .eq("doctor_id", doctorId);
+    if (error) {
+      console.error(
+        `Error fetching time slots for doctor ID: ${doctorId}`,
+        error
+      );
+      return res.status(500).json({ error: "Failed to fetch time slots" });
+    }
+    res.json(data);
   } catch (error) {
     console.error(
       `Error fetching time slots for doctor ID: ${doctorId}`,
@@ -69,14 +77,19 @@ router.get("/upcommingappointments", async (req, res) => {
   }
 
   try {
-    const query = `
-      SELECT * FROM UPCOMING_APPOINTMENT_VIEW WHERE PATIENT_ID = :patientId
-    `;
+    const { data, error } = await supabase
+      .from("upcoming_appointment_view")
+      .select("*")
+      .eq("patient_id", patientId);
+    if (error) {
+      console.error(
+        `Error fetching appointments for patient ID: ${patientId}`,
+        error
+      );
+      return res.status(500).json({ error: "Failed to fetch appointments" });
+    }
 
-    // Run the query with parameterized input
-    const appointments = await run_query(query, { patientId });
-
-    res.json(appointments);
+    res.json(data);
   } catch (error) {
     console.error(
       `Error fetching appointments for patient ID: ${patientId}`,
@@ -85,30 +98,29 @@ router.get("/upcommingappointments", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch appointments" });
   }
 });
-
 
 // Route to fetch all previous appointments for a specific patient
 router.get("/previousappointments", async (req, res) => {
   const patientId = parseInt(req.query.patientId);
 
-  // Validate patientId
   if (isNaN(patientId)) {
     return res.status(400).json({ error: "Invalid patient ID" });
   }
 
   try {
-    const query = `
-      SELECT * FROM PREVIOUS_APPOINTMENT_VIEW WHERE PATIENT_ID = :patientId
-    `;
+    const { data, error } = await supabase
+      .from("previous_appointment_view")
+      .select("*")
+      .eq("patient_id", patientId);
+    if (error) {
+      console.error(
+        `Error fetching appointments for patient ID: ${patientId}`,
+        error
+      );
+      return res.status(500).json({ error: "Failed to fetch appointments" });
+    }
 
-    // Run the query with parameterized input
-    const appointments = await run_query(query, { patientId });
-
-    // Log the results for debugging purposes
-    // console.log(appointments);
-
-    // Send the results back as a JSON response
-    res.json(appointments);
+    res.json(data);
   } catch (error) {
     console.error(
       `Error fetching appointments for patient ID: ${patientId}`,
@@ -117,10 +129,6 @@ router.get("/previousappointments", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch appointments" });
   }
 });
-
-
-
-
 
 // Route to book a new appointment
 router.post("/appointmentsdata", async (req, res) => {
@@ -138,43 +146,25 @@ router.post("/appointmentsdata", async (req, res) => {
       .status(400)
       .json({ error: "Please provide all required fields" });
   }
-
   try {
-    // SQL query to insert a new appointment
-    const query = `
-      INSERT INTO APPOINTMENT (
-        APPOINTMENT_DATE, 
-        APPOINTMENT_TIME, 
-        APPOINTMENT_STATUS, 
-        PATIENT_ID, 
-        DOCTOR_ID
-      ) 
-      VALUES (
-        TO_DATE(:bind_date, 'YYYY-MM-DD'), 
-        :bind_time, 
-        'Pending', 
-        :bind_patientId, 
-        :bind_doctor
-      )
-    `;
-
-    // Run the query with the extracted values
-    await run_query(query, {
-      bind_date: date,
-      bind_time: time,
-      bind_patientId: patientId,
-      bind_doctor: doctor
-    });
-
-    // Sending success response
+    const { error } = await supabase.from("appointment").insert([
+      {
+        appointment_date: date,
+        appointment_time: time,
+        appointment_status: "Pending",
+        patient_id: patientId,
+        doctor_id: doctor,
+      },
+    ]);
+    if (error) {
+      console.error("Error booking appointment:", error);
+      return res.status(500).json({ error: "Failed to book appointment" });
+    }
     res.status(201).json({ message: "Appointment successfully booked!" });
   } catch (error) {
     console.error("Error booking appointment:", error);
     res.status(500).json({ error: "Failed to book appointment" });
   }
 });
-
-
-
 
 export default router;

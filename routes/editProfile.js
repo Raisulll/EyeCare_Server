@@ -1,5 +1,5 @@
 import express from "express";
-import { run_query } from "../db/connectiondb.js";
+import supabase from "../db/SupabaseClient.js";
 
 const router = express.Router();
 
@@ -37,38 +37,27 @@ router.post("/doctorprofile", async (req, res) => {
       return res.status(400).json({ message: "Invalid input data" });
     }
 
-    const updateDoctorProfile = `
-      UPDATE DOCTOR
-      SET
-        DOCTOR_NAME = :doctorName,
-        DOCTOR_MAIL = :doctorEmail,
-        DOCTOR_PHONE = :doctorPhone,
-        DOCTOR_DISTRICT = :doctorDistrict,
-        DOCTOR_AREA = :doctorArea,
-        DOCTOR_ROADNUMBER = :doctorRoadNum,
-        DOCTOR_GENDER = :doctorGender,
-        DOCTOR_LICENSE = :doctorLicense,
-        DOCTOR_TIMESLOT = :timeslot,
-        DOCTOR_SPECIALITY = :experience
-      WHERE DOCTOR_ID = :doctorId
-    `;
-
+    const { error } = await supabase
+      .from("doctor")
+      .update({
+        doctor_name: doctorName,
+        doctor_mail: doctorEmail,
+        doctor_phone: doctorPhone,
+        doctor_district: doctorDistrict,
+        doctor_area: doctorArea,
+        doctor_roadnumber: doctorRoadNum,
+        doctor_gender: doctorGender,
+        doctor_license: doctorLicense,
+        doctor_timeslot: timeslot,
+        doctor_speciality: experience,
+      })
+      .eq("doctor_id", doctorId);
+    if (error) {
+      console.error("Error updating profile:", error);
+      return res.status(500).json({ message: "Failed to update profile" });
+    }
     console.log(req.body);
 
-    // Execute the query with parameters
-    await run_query(updateDoctorProfile, {
-      doctorName,
-      doctorEmail,
-      doctorPhone,
-      doctorDistrict,
-      doctorArea,
-      doctorRoadNum,
-      doctorGender,
-      doctorLicense,
-      timeslot,
-      experience,
-      doctorId: Number(doctorId), 
-    });
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
@@ -76,10 +65,7 @@ router.post("/doctorprofile", async (req, res) => {
   }
 });
 
-
-
 //update patient details
-
 router.post("/patientProfileData", async (req, res) => {
   console.log("Patient profile data", req.body);
   const {
@@ -91,32 +77,31 @@ router.post("/patientProfileData", async (req, res) => {
     patientArea,
     patientRoadNumber,
   } = req.body;
-  const updatePatientProfile = `
-    UPDATE PATIENT
-    SET
-      PATIENT_NAME = :patientName,
-      PATIENT_PHONE = :patientPhone,
-      PATIENT_DOB = TO_DATE(:patientDOB, 'YYYY-MM-DD'),
-      PATIENT_ADDRESS=address_type(:patientDistrict,:patientArea,:patientRoadNumber)
-    WHERE PATIENT_ID = :patientId
-  `;
+
   try {
-    await run_query(updatePatientProfile, {
-      patientName,
-      patientPhone,
-      patientDOB,
-      patientDistrict,
-      patientArea,
-      patientRoadNumber,
-      patientId: Number(patientId),
-    });
+    const { error } = await supabase
+      .from("patient")
+      .update({
+        patient_name: patientName,
+        patient_phone: patientPhone,
+        patient_dob: patientDOB,
+        patient_address: {
+          patientDistrict,
+          patientArea,
+          patientRoadNumber,
+        },
+      })
+      .eq("patient_id", patientId);
+    if (error) {
+      console.error("Error updating profile:", error);
+      return res.status(500).json({ message: "Failed to update profile" });
+    }
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 //update doctor data
 router.post("/doctorProfileData", async (req, res) => {
@@ -131,35 +116,29 @@ router.post("/doctorProfileData", async (req, res) => {
     doctorRoadNumber,
     doctorSpeciality,
   } = req.body;
-  const updatePatientProfile = `
-    UPDATE DOCTOR
-    SET
-      DOCTOR_NAME = :doctorName,
-      DOCTOR_MAIL = :doctorMail,
-      DOCTOR_PHONE = :doctorPhone,
-      DOCTOR_DISTRICT = :doctorDistrict,
-      DOCTOR_AREA = :doctorArea,
-      DOCTOR_ROADNUMBER = :doctorRoadNumber,
-      DOCTOR_SPECIALITY = :doctorSpeciality
-    WHERE DOCTOR_ID = :doctorId
-  `;
+
   try {
-    await run_query(updatePatientProfile, {
-      doctorName,
-      doctorMail,
-      doctorPhone,
-      doctorDistrict,
-      doctorArea,
-      doctorRoadNumber,
-      doctorSpeciality,
-      doctorId: Number(doctorId),
-    });
+    const { error } = await supabase
+      .from("doctor")
+      .update({
+        doctor_name: doctorName,
+        doctor_mail: doctorMail,
+        doctor_phone: doctorPhone,
+        doctor_district: doctorDistrict,
+        doctor_area: doctorArea,
+        doctor_roadnumber: doctorRoadNumber,
+        doctor_speciality: doctorSpeciality,
+      })
+      .eq("doctor_id", doctorId);
+    if (error) {
+      console.error("Error updating profile:", error);
+      return res.status(500).json({ message: "Failed to update profile" });
+    }
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 export default router;
