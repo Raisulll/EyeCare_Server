@@ -23,21 +23,8 @@ This project is a server-side application built using Node.js and Express. It se
 
 ### Environment Variables
 
-Create a `.env` file in the root directory of the project and add the following environment variables:
+Create a `.env` file in the root directory of the project and contact the admin to get more details.
 
-```
-PORT=5000
-USER=admin
-PASSWORD=admin
-CONNECTION_STRING=localhost:1521/orclpdb
-EMAIL='eyecare.g10@gmail.com'
-EMAIL_PASSWORD='angvowarudmxsagh'
-Cloudinary_Api_Secret= '2CnXapWIP3lkqGT9nIeyizFVQjQ'
-Cloudinary_Api_Key= 767758152499473
-Cloudinary_Cloud_Name= 'dnn7v3kkw'
-Supabase_Url=https://qgnjyqatltbinjtsdmrx.supabase.co
-Supabase_Anon_Key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnbmp5cWF0bHRiaW5qdHNkbXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2OTQ0OTQsImV4cCI6MjA1MDI3MDQ5NH0.KccU8IVYH18_qaoiuRVHVqddeVJ-3v7qSnAwI6L9FR0
-```
 
 For details on the environment variables, please contact the admin.
 
