@@ -1,4 +1,4 @@
-# DBMS Project Server
+# EyeCare_Server
 
 This project is a server-side application built using Node.js and Express. It serves as the backend for a database management system (DBMS) project. The server handles various routes and operations related to user authentication, profile management, appointments, and more.
 
